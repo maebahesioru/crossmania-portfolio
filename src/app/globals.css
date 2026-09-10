@@ -97,12 +97,17 @@ body {
   line-break: strict;
 }
 
-pre,
-code,
-kbd,
-samp {
-  word-break: normal;
-  overflow-wrap: normal;
+/* コード類は auto-phrase の語中分断を継承させない。
+   ⚠️ @layer base に入れること — レイヤー外の要素セレクタは Tailwind の
+   utilities より優先されてしまい、`break-all` 等のユーティリティが効かなくなる。 */
+@layer base {
+  pre,
+  code,
+  kbd,
+  samp {
+    word-break: normal;
+    overflow-wrap: normal;
+  }
 }
 
 ::selection {

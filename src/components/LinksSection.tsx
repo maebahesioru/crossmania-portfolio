@@ -91,7 +91,13 @@ export function LinksSection() {
   const [copied, setCopied] = useState(false);
   const { accounts, fetchedAt } = useXAccounts();
 
-  const snippet = `<a href="${SITE_URL}/" target="_blank" rel="noopener">\n  <img src="${SITE_URL}/banner.svg" width="200" height="40" alt="十字架_mania">\n</a>`;
+  // サイドバー(約320px)でも途中改行が起きないよう、1行50文字以内に整形しておく
+  const snippet = [
+    `<a href="${SITE_URL}/"`,
+    `   target="_blank" rel="noopener"><img`,
+    `   src="${SITE_URL}/banner.svg"`,
+    `   width="200" height="40" alt="十字架_mania"></a>`,
+  ].join("\n");
 
   const copy = async () => {
     try {
@@ -114,9 +120,9 @@ export function LinksSection() {
         />
       </Reveal>
 
-      <div className="mt-7 grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
+      <div className="mt-7 grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(380px,30%)]">
         <Reveal className="panel p-4">
-          <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 2xl:grid-cols-3">
+          <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3">
             {CONTACTS.map((c) => {
               const Icon = ICONS[c.icon];
               const live = c.xAccount ? accounts?.[c.xAccount] : undefined;
@@ -230,7 +236,7 @@ export function LinksSection() {
             <p className="label">{t("sec.banner")}</p>
             <div className="mt-3 rounded-lg border border-dashed border-line bg-panel2/60 p-3">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/banner.svg" alt="十字架_mania banner" width={200} height={40} className="h-10 w-[200px]" />
+              <img src="/banner.svg" alt="十字架_mania banner" width={200} height={40} className="h-auto w-full max-w-[420px]" />
             </div>
             <div className="mt-3 flex flex-wrap gap-2">
               <button
@@ -248,7 +254,7 @@ export function LinksSection() {
                 {t("banner.download")}
               </a>
             </div>
-            <pre className="mt-3 max-h-24 overflow-auto rounded-lg border border-line bg-panel2 p-2 font-mono text-[11.5px] text-sub">
+            <pre className="mt-3 max-h-40 overflow-auto rounded-lg border border-line bg-panel2 p-2.5 font-mono text-[9.5px] leading-relaxed break-all whitespace-pre-wrap text-sub">
               {snippet}
             </pre>
           </Reveal>

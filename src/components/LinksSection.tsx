@@ -5,7 +5,7 @@ import { CONTACTS, DONATIONS, type IconName } from "@/lib/profile";
 import { useI18n } from "@/lib/i18n";
 import { SITE_URL } from "@/lib/site";
 import { relativeTime, useXAccounts } from "./useXAccounts";
-import { CopyAddress, CopyButton, Reveal, SectionHeading } from "./ui";
+import { CopyAddress, CopyButton, middleTruncate, Reveal, SectionHeading } from "./ui";
 import {
   BitcoinIcon,
   BlueskyIcon,
@@ -167,8 +167,9 @@ export function LinksSection() {
                     </span>
                     {/* 2行目: ID(コピー対象) または ハンドル + FF数(ライブ時) */}
                     {c.secret ? (
-                      <span className="mt-0.5 block font-mono text-[11.5px] leading-relaxed break-all text-sub">
-                        {c.secret}
+                      /* 他カードと同じ1行のリズムを保つ(全文は title とコピーで取得) */
+                      <span className="block truncate font-mono text-[11.5px] text-sub" title={c.secret}>
+                        {middleTruncate(c.secret)}
                       </span>
                     ) : (
                       <span className="block truncate font-mono text-[11.5px] text-sub">

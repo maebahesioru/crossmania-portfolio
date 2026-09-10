@@ -233,3 +233,13 @@ export function CopyButton({
     </button>
   );
 }
+
+/**
+ * 長い識別子を1行に収める(両端を残す)。
+ * Session ID やアドレスは「読む」ものではなく「コピーする」ものなので、
+ * 1行のリズムを崩さないことを優先し、全文は title とコピーで取得させる。
+ */
+export function middleTruncate(value: string, head = 12, tail = 10): string {
+  if (value.length <= head + tail + 1) return value;
+  return `${value.slice(0, head)}…${value.slice(-tail)}`;
+}

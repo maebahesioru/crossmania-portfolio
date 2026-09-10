@@ -32,7 +32,7 @@ MSYS_NO_PATHCONV=1 taskkill /F /PID $PID
 | Blog検索(タイトル / ソース絞り込み) | `src/components/BlogExplorer.tsx` |
 | My Banner SVG / コピー用HTML | `public/banner.svg` + `src/components/LinksSection.tsx` |
 | テーマ3種(ライト / ダークブルー / ブラック) | `src/app/globals.css` + `src/lib/theme.tsx` |
-| keepandroidopen ヘッダー | `src/components/KeepAndroid.tsx` |
+| keepandroidopen 公式カウントダウンバナー | `src/components/KeepAndroid.tsx`(公式 `banner.js` を読み込む) |
 | PWA(manifest + Service Worker + オフライン画面) | `src/app/manifest.ts` / `public/sw.js` / `public/offline.html` |
 | 現在時刻 (JST) / ヒカマー歴カウント | `src/components/ClockJST.tsx` |
 | 利用規約 / ライセンス | `/terms` `/license`(`src/components/Terms.tsx` / `License.tsx`) |
@@ -43,6 +43,18 @@ MSYS_NO_PATHCONV=1 taskkill /F /PID $PID
 | クライアント情報(IPは既定でマスク) | `src/app/api/client-info/route.ts` + `src/components/ClientInfo.tsx` |
 | Cookies 同意バナー | `src/components/CookieConsent.tsx` |
 | favicon / OGP画像 / apple-touch-icon | `src/app/icon.svg` / `public/og.png` / `public/apple-icon.png` |
+
+## keepandroidopen バナーについて
+
+キャンペーンサイトが配布している **公式のカウントダウンバナー**(`https://keepandroidopen.org/banner.js`)を
+そのまま読み込んでいる。自前でデザインしない。
+
+- 文言・配色(赤グラデ)・2027年1月1日へのカウントダウン・閉じるボタン(30日記憶)はすべて公式実装
+- 言語は `<html lang>` から自動判定される(`lang` パラメータは渡さない)
+- `?id=kao-banner-host` で React 管理外のホスト要素の中に挿入させている
+  (body直下に割り込ませると React の子要素と衝突するため)
+- SRI は付けない(上流が随時更新する配布スクリプトのため)
+- 公式スクリプトが読めない環境ではバナーが出ないだけで、サイト本体には影響しない
 
 ## データ保存
 

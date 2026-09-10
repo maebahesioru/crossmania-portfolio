@@ -1,43 +1,34 @@
 "use client";
 
-import { useState } from "react";
-import { useI18n } from "@/lib/i18n";
+import Script from "next/script";
 
-const URL_KEEP = "https://keepandroidopen.org/ja/";
+const HOST_ID = "kao-banner-host";
 
-/** keepandroidopen.org の「Androidは閉鎖的なプラットフォームになろうとしています」ヘッダー */
+/**
+ * keepandroidopen.org の公式カウントダウンバナー。
+ *
+ * 自前のデザインで作らず、公式が配布している `banner.js` をそのまま読み込む。
+ * 文言・配色・カウントダウン(2027年1月1日まで)・閉じるボタンの挙動は
+ * すべて公式実装のものになる。
+ *
+ * - 言語は `<html lang>` から自動判定されるため lang は渡さない
+ * - `id=` を渡して、React が管理しないホスト要素の中に挿入させる
+ *   (body直下に割り込ませると React の子要素の整合性とぶつかるため)
+ * - 公式スクリプトは `<div id>` の中に追記するので、ホスト要素は
+ *   子を持たない空要素として置く
+ * - SRI(integrity) は意図的に付けない: 上流が随時更新する配布スクリプトで、
+ *   ハッシュを固定するとある日バナーが読み込めなくなる。公式が案内する
+ *   設置方法(そのまま script で読み込む)に従う。
+ */
 export function KeepAndroidBanner() {
-  const { t } = useI18n();
-  const [closed, setClosed] = useState(false);
-  if (closed) return null;
-
   return (
-    <div className="relative w-full overflow-hidden border-b border-line bg-gradient-to-r from-[#0b3d2e] via-[#116b3a] to-[#0b3d2e] text-white">
-      <div className="pointer-events-none absolute inset-0 opacity-30 [background:repeating-linear-gradient(45deg,transparent_0_14px,rgba(255,255,255,.06)_14px_28px)]" />
-      <div className="shell relative flex items-center gap-3 py-2.5">
-        <span className="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-[#3ddc84] font-bold text-[#07301d]">
-          🤖
-        </span>
-        <p className="min-w-0 flex-1 truncate text-[13px] font-semibold tracking-tight sm:text-sm">
-          {t("keepandroid.text")}
-        </p>
-        <a
-          href={URL_KEEP}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="shrink-0 rounded-full bg-white/15 px-3 py-1 text-xs font-bold whitespace-nowrap backdrop-blur transition hover:bg-white hover:text-[#07301d]"
-        >
-          {t("keepandroid.cta")} →
-        </a>
-        <button
-          type="button"
-          onClick={() => setClosed(true)}
-          aria-label={t("close")}
-          className="shrink-0 text-white/60 transition hover:text-white"
-        >
-          ✕
-        </button>
-      </div>
-    </div>
+    <>
+      <div id={HOST_ID} suppressHydrationWarning />
+      <Script
+        id="kao-countdown-banner"
+        src={`https://keepandroidopen.org/banner.js?id=${HOST_ID}`}
+        strategy="afterInteractive"
+      />
+    </>
   );
 }

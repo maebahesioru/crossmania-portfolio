@@ -126,6 +126,9 @@ export function Chip({ children, title }: { children: ReactNode; title?: string 
 }
 
 /**
+ * 現在は未使用。マスク表示が必要になった時のために残してある
+ * (公開前提の情報は CopyAddress / CopyButton で常時表示する方針)。
+ *
  * 送金用アドレス(公開前提の情報)用の表示。
  * コピーできないと意味がないので、常に全文表示 + ワンクリックでコピー。
  * 秘密にする必要のある識別子には SecretValue を使う。
@@ -169,5 +172,64 @@ export function CopyAddress({ value, label }: { value: string; label?: string })
         {label ? <span className="text-[11.5px] text-sub">{label}</span> : null}
       </div>
     </div>
+  );
+}
+
+/** リンクカードの ↗ と同じ位置に置く小さなコピーボタン */
+export function CopyButton({
+  value,
+  label,
+  className = "",
+}: {
+  value: string;
+  label?: string;
+  className?: string;
+}) {
+  const [copied, setCopied] = useState(false);
+
+  const copy = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(value);
+    } catch {
+      const ta = document.createElement("textarea");
+      ta.value = value;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand("copy");
+      } catch {
+        /* ignore */
+      }
+      document.body.removeChild(ta);
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1800);
+  };
+
+  const title = copied ? "コピーしました" : (label ?? "コピー");
+
+  return (
+    <button
+      type="button"
+      onClick={copy}
+      title={title}
+      aria-label={title}
+      className={`grid h-7 w-7 shrink-0 place-items-center rounded-md border border-line text-sub transition hover:border-accent hover:text-fg ${className}`}
+    >
+      {copied ? (
+        <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+          <path d="M4 12.5 9.5 18 20 6.5" />
+        </svg>
+      ) : (
+        <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+          <rect x="9" y="9" width="11" height="11" rx="2.2" />
+          <path d="M15 5.5A2.5 2.5 0 0 0 12.5 3H6.5A2.5 2.5 0 0 0 4 5.5v6A2.5 2.5 0 0 0 6.5 14" />
+        </svg>
+      )}
+    </button>
   );
 }

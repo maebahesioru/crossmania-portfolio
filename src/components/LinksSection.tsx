@@ -5,7 +5,7 @@ import { CONTACTS, DONATIONS, type IconName } from "@/lib/profile";
 import { useI18n } from "@/lib/i18n";
 import { SITE_URL } from "@/lib/site";
 import { relativeTime, useXAccounts } from "./useXAccounts";
-import { CopyAddress, Reveal, SecretValue, SectionHeading } from "./ui";
+import { CopyAddress, CopyButton, Reveal, SectionHeading } from "./ui";
 import {
   BitcoinIcon,
   BlueskyIcon,
@@ -91,12 +91,13 @@ export function LinksSection() {
   const [copied, setCopied] = useState(false);
   const { accounts, fetchedAt } = useXAccounts();
 
-  // サイドバー(約320px)でも途中改行が起きないよう、1行50文字以内に整形しておく
+  // サイドバー(最狭360px)でも語中で折り返さないよう、1行44文字以内に整形しておく
   const snippet = [
     `<a href="${SITE_URL}/"`,
-    `   target="_blank" rel="noopener"><img`,
-    `   src="${SITE_URL}/banner.svg"`,
-    `   width="200" height="40" alt="十字架_mania"></a>`,
+    `   target="_blank" rel="noopener">`,
+    `  <img src="${SITE_URL}/banner.svg"`,
+    `       width="200" height="40"`,
+    `       alt="十字架_mania"></a>`,
   ].join("\n");
 
   const copy = async () => {
@@ -164,12 +165,18 @@ export function LinksSection() {
                         </span>
                       ) : null}
                     </span>
-                    {/* 2行目: ハンドル + FF数(ライブ時) */}
-                    <span className="block truncate font-mono text-[11.5px] text-sub">
-                      {liveOk && live?.followers !== undefined
-                        ? `${c.handle} · ${locale === "ja" ? "FF" : "Followers"} ${live.followers.toLocaleString(locale === "ja" ? "ja-JP" : "en-US")}`
-                        : c.handle}
-                    </span>
+                    {/* 2行目: ID(コピー対象) または ハンドル + FF数(ライブ時) */}
+                    {c.secret ? (
+                      <span className="mt-0.5 block font-mono text-[11.5px] leading-relaxed break-all text-sub">
+                        {c.secret}
+                      </span>
+                    ) : (
+                      <span className="block truncate font-mono text-[11.5px] text-sub">
+                        {liveOk && live?.followers !== undefined
+                          ? `${c.handle} · ${locale === "ja" ? "FF" : "Followers"} ${live.followers.toLocaleString(locale === "ja" ? "ja-JP" : "en-US")}`
+                          : c.handle}
+                      </span>
+                    )}
                     {/* 3行目: 現在の表示名(ライブ時のみ・変わっても追従) */}
                     {liveOk && live?.name ? (
                       <span className="mt-0.5 block truncate text-[11px] text-sub" title={live.name}>
@@ -182,8 +189,9 @@ export function LinksSection() {
               return (
                 <li key={c.label}>
                   {c.secret ? (
-                    <div className="flex items-center gap-2.5 rounded-xl border border-line bg-panel2/40 px-3 py-2.5">
+                    <div className="flex items-center gap-2.5 rounded-xl border border-line px-3 py-2.5">
                       {inner}
+                      <CopyButton value={c.secret} label={`${c.label} をコピー`} />
                     </div>
                   ) : (
                     <a
@@ -198,11 +206,6 @@ export function LinksSection() {
                   )}
                   {c.note && !(c.noteReplacedByLive && c.xAccount && accounts?.[c.xAccount]?.ok) ? (
                     <p className="mt-1 pl-1 text-[11.5px] text-sub">{pick(c.note)}</p>
-                  ) : null}
-                  {c.secret ? (
-                    <div className="mt-1.5">
-                      <SecretValue value={c.secret} />
-                    </div>
                   ) : null}
                 </li>
               );

@@ -11,7 +11,7 @@ export function MirrorContent() {
   const rows = [
     {
       label: "Clearnet",
-      value: "crossmania.hikamers.app",
+      value: "hikamers.app",
       live: true,
     },
     {
@@ -91,7 +91,7 @@ export function MirrorContent() {
 
           <Reveal className="panel p-5" delay={200}>
             <p className="label">{locale === "ja" ? "本家" : "Canonical"}</p>
-            <p className="mt-2 font-mono text-[12px] break-all text-link">https://crossmania.hikamers.app</p>
+            <p className="mt-2 font-mono text-[12px] break-all text-link">https://hikamers.app</p>
             <Link href="/" className="link mt-3 inline-block text-[12px]">
               ← {t("nav.home")}
             </Link>

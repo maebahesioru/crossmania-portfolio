@@ -3,7 +3,7 @@
 北海道の学生 / Hikamer、**十字架_mania** のポートフォリオサイト。
 Next.js 16 (App Router) + React 19 + TypeScript + Tailwind CSS 4 / ビルドは **bun**。
 
-> 公開予定URL: https://crossmania.hikamers.app (環境変数 `SITE_URL` で上書き可)
+> 公開予定URL: **https://hikamers.app**(ルートドメイン。環境変数 `SITE_URL` で上書き可)
 
 ## 開発
 
@@ -105,8 +105,8 @@ Retina でも 2.5倍以上の画素密度になる。
 ## デプロイ
 
 ```bash
-SITE_URL=https://crossmania.hikamers.app bun run build
-SITE_URL=https://crossmania.hikamers.app bun start -p 3700
+SITE_URL=https://hikamers.app bun run build
+SITE_URL=https://hikamers.app bun start -p 3700
 ```
 
 canonical / OGP / sitemap / RSS はすべて `SITE_URL` を参照するので、本番ドメインを必ず設定する。

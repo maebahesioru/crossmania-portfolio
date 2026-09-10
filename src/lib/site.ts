@@ -1,4 +1,4 @@
-export const SITE_URL = process.env.SITE_URL || "https://crossmania.hikamers.app";
+export const SITE_URL = process.env.SITE_URL || "https://hikamers.app";
 
 export const SITE = {
   url: SITE_URL,

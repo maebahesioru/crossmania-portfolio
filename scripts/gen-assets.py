@@ -160,7 +160,7 @@ def make_og() -> Image.Image:
     # フッター
     d.line([(94, 546), (1106, 546)], fill=(29, 44, 74, 255), width=1)
     f_foot = ImageFont.truetype(SANS_B, 26)
-    d.text((94, 566), "crossmania.hikamers.app", font=f_foot, fill=ACCENT2 + (255,))
+    d.text((94, 566), "hikamers.app", font=f_foot, fill=ACCENT2 + (255,))
     f_foot2 = ImageFont.truetype(SANS, 24)
     d.text((620, 568), "X / GitHub / note / Qiita  —  @maebahesioru2", font=f_foot2, fill=(147, 164, 196, 255))
 

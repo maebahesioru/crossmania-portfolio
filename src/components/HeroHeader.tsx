@@ -23,9 +23,9 @@ export function HeroHeader() {
       />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-accent/60 to-transparent" aria-hidden />
 
-      <div className="relative flex flex-col-reverse items-center gap-5 px-6 py-7 sm:px-8 md:flex-row md:items-center md:gap-8 md:py-9">
+      <div className="relative flex flex-col-reverse items-center gap-4 px-6 pt-11 sm:px-8 md:flex-row md:items-end md:gap-6 md:pt-20 md:pb-0">
         {/* ---- テキスト ---- */}
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 flex-1 md:pb-9">
           <span className="block h-1 w-24 rounded-full bg-accent sm:w-36" />
 
           <h1 className="display mt-4 text-[40px] leading-[1.05] sm:text-6xl lg:text-7xl">
@@ -49,19 +49,15 @@ export function HeroHeader() {
           </div>
         </div>
 
-        {/* ---- キャラクター画像 ---- */}
-        <div className="relative shrink-0 self-center">
+        {/* ---- キャラクター画像(カード下端まで伸ばして切る) ---- */}
+        <div className="relative z-10 shrink-0 self-center md:self-end md:-mb-24 lg:-mb-28 xl:-mb-32">
           {/* 背後にうっすらアクセントの円を敷いて、明るいテーマでも輪郭が沈まないようにする */}
           <span
-            className="pointer-events-none absolute left-1/2 top-[46%] h-[88%] w-[88%] -translate-x-1/2 -translate-y-1/2 rounded-full"
+            className="pointer-events-none absolute top-[42%] left-1/2 h-[94%] w-[94%] -translate-x-1/2 -translate-y-1/2 rounded-full"
             style={{
               background:
-                "radial-gradient(closest-side, color-mix(in srgb, var(--accent) 26%, transparent), transparent 78%)",
+                "radial-gradient(closest-side, color-mix(in srgb, var(--accent) 30%, transparent), transparent 78%)",
             }}
-            aria-hidden
-          />
-          <span
-            className="pointer-events-none absolute inset-x-3 bottom-1 h-5 rounded-[50%] bg-black/35 blur-lg"
             aria-hidden
           />
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -70,11 +66,7 @@ export function HeroHeader() {
             alt="十字架_mania のキャラクター"
             width={374}
             height={482}
-            className="relative h-64 w-auto drop-shadow-[0_16px_34px_rgba(0,0,0,0.5)] md:h-72 lg:h-[350px]"
-            style={{
-              maskImage: "linear-gradient(to bottom, #000 82%, transparent 100%)",
-              WebkitMaskImage: "linear-gradient(to bottom, #000 82%, transparent 100%)",
-            }}
+            className="hero-char relative h-72 w-auto drop-shadow-[0_16px_34px_rgba(0,0,0,0.5)] sm:h-80 md:h-[480px] lg:h-[560px] xl:h-[640px]"
           />
         </div>
       </div>

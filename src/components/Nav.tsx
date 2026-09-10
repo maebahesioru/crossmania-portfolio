@@ -60,7 +60,7 @@ export function Nav() {
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-1 md:flex">
+        <nav className="hidden items-center gap-1 lg:flex">
           {NAV.map((n) => {
             const active = n.href === "/" ? pathname === "/" : pathname.startsWith(n.href);
             return (
@@ -148,7 +148,7 @@ export function Nav() {
           <button
             type="button"
             onClick={() => setOpen((o) => !o)}
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-line text-sub transition hover:border-accent hover:text-fg md:hidden"
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-line text-sub transition hover:border-accent hover:text-fg lg:hidden"
             aria-label={t("nav.menu")}
             aria-expanded={open}
           >
@@ -162,7 +162,7 @@ export function Nav() {
       </div>
 
       {open ? (
-        <div className="border-t border-line bg-panel md:hidden">
+        <div className="border-t border-line bg-panel lg:hidden">
           <div className="shell flex flex-col py-2">
             {NAV.map((n) => (
               <Link key={n.href} href={n.href} className="rounded-lg px-2 py-3 text-sm text-sub hover:bg-panel2 hover:text-fg">

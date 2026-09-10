@@ -5,7 +5,7 @@ import { CONTACTS, DONATIONS, type IconName } from "@/lib/profile";
 import { useI18n } from "@/lib/i18n";
 import { SITE_URL } from "@/lib/site";
 import { relativeTime, useXAccounts } from "./useXAccounts";
-import { Reveal, SecretValue, SectionHeading } from "./ui";
+import { CopyAddress, Reveal, SecretValue, SectionHeading } from "./ui";
 import {
   BitcoinIcon,
   BlueskyIcon,
@@ -291,7 +291,7 @@ export function LinksSection() {
         <SectionHeading index="09" title={t("sec.donate")} sub={locale === "ja" ? "投げ銭はすべてサーバー代になります" : "every tip goes to server costs"} id="donate" />
       </Reveal>
 
-      <div className="mt-6 grid grid-cols-1 gap-3 lg:grid-cols-2">
+      <div id="donate-list" className="mt-6 grid grid-cols-1 gap-3 lg:grid-cols-2">
         {DONATIONS.map((d, i) => {
           const Icon =
             d.icon === "monero" ? MoneroIcon : d.icon === "bitcoin" ? BitcoinIcon : d.icon === "litecoin" ? LitecoinIcon : OfuseIcon;
@@ -312,7 +312,7 @@ export function LinksSection() {
                 </div>
                 <div className="mt-3">
                   {d.address ? (
-                    <SecretValue value={d.address} />
+                    <CopyAddress value={d.address} />
                   ) : (
                     <a href={d.url} target="_blank" rel="noopener noreferrer" className="link font-mono text-[12px]">
                       {d.url} ↗
@@ -326,8 +326,8 @@ export function LinksSection() {
       </div>
       <p className="mt-3 text-[11.5px] text-sub">
         {locale === "ja"
-          ? "アドレスは既定でマスクしています。👁 を押すと表示されます。"
-          : "Addresses are masked by default — press 👁 to reveal."}
+          ? "送金用アドレスは全文を載せています。コピーしてお使いください。"
+          : "Donation addresses are shown in full — use the copy button."}
       </p>
     </section>
   );

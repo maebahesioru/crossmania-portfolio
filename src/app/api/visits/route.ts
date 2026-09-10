@@ -62,10 +62,15 @@ export async function GET(req: Request) {
       data.last = new Date().toISOString();
     }
 
-    // 訪問者台帳が肥大化しないよう上限を設ける(古い順に間引く)
+    // 訪問者台帳・連投判定の記録が肥大化しないよう上限を設ける(古い順に間引く)
     const ids = Object.keys(data.visitors);
     if (ids.length > 20_000) {
       for (const k of ids.slice(0, ids.length - 20_000)) delete data.visitors[k];
+    }
+    // ⚠️ _lastAt は visitors と同じキーで増える。ここを間引かないと
+    //    ファイルが訪問者の数だけ永久に成長する(全件読み書きなので実害が出る)
+    for (const k of Object.keys(lastAt)) {
+      if (!(k in data.visitors)) delete lastAt[k];
     }
 
     await writeJson(FILE, { ...data, _lastAt: lastAt });

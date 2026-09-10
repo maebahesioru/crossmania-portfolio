@@ -124,3 +124,50 @@ export function Chip({ children, title }: { children: ReactNode; title?: string 
     </span>
   );
 }
+
+/**
+ * 送金用アドレス(公開前提の情報)用の表示。
+ * コピーできないと意味がないので、常に全文表示 + ワンクリックでコピー。
+ * 秘密にする必要のある識別子には SecretValue を使う。
+ */
+export function CopyAddress({ value, label }: { value: string; label?: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(value);
+    } catch {
+      // クリップボードAPIが使えない環境(非HTTPS等)は選択して手動コピー
+      const ta = document.createElement("textarea");
+      ta.value = value;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand("copy");
+      } catch {
+        /* ignore */
+      }
+      document.body.removeChild(ta);
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1800);
+  };
+
+  return (
+    <div className="min-w-0">
+      <code className="block font-mono text-[11.5px] leading-relaxed break-all text-fg">{value}</code>
+      <div className="mt-2 flex items-center gap-2">
+        <button
+          type="button"
+          onClick={copy}
+          className="shrink-0 rounded-md border border-line px-2.5 py-1 text-[11.5px] transition hover:border-accent hover:text-fg"
+        >
+          {copied ? "✓ コピーしました" : "コピー"}
+        </button>
+        {label ? <span className="text-[11.5px] text-sub">{label}</span> : null}
+      </div>
+    </div>
+  );
+}

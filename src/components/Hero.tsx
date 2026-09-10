@@ -1,6 +1,6 @@
 "use client";
 
-import { HeaderArt } from "./HeaderArt";
+import { HeroHeader } from "./HeroHeader";
 import { ClockJST, SinceCounter } from "./ClockJST";
 import { useI18n } from "@/lib/i18n";
 import { PROFILE } from "@/lib/profile";
@@ -26,16 +26,8 @@ export function Hero() {
     <section className="relative pt-6 pb-4">
       <div className="shell">
         <Reveal>
-          <HeaderArt className="h-auto w-full" />
+          <HeroHeader />
         </Reveal>
-
-        {/* モバイル用の補助情報(SVG内の小さい文字は縮小されて読めないため) */}
-        <div className="mt-3 flex flex-wrap gap-2 sm:hidden">
-          <span className="chip">{t("hero.role")}</span>
-          <span className="chip">雰囲気デベロッパー · Hikamer</span>
-          <span className="chip">MBTI {PROFILE.mbti}</span>
-          <span className="chip">self-hosted / Next.js</span>
-        </div>
 
         <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
           {/* お知らせ */}

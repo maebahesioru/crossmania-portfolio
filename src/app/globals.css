@@ -19,8 +19,8 @@
   --accent-2: #0369a1;
   --link: #0369a1;
   --grid: rgba(10, 16, 32, 0.055);
-  --glow: rgba(216, 27, 63, 0.10);
-  --glow-2: rgba(3, 105, 161, 0.10);
+  --glow: rgba(216, 27, 63, 0.14);
+  --glow-2: rgba(3, 105, 161, 0.12);
   --shadow: 0 18px 40px -24px rgba(10, 16, 32, 0.45);
   color-scheme: light;
 }

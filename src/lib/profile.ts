@@ -292,13 +292,15 @@ export type ContactLink = {
   secret?: string;
   /** fxtwitter でリアルタイム取得する X アカウントのハンドル(@なし) */
   xAccount?: string;
+  /** ライブ取得できた時に note を隠す(内容が実データと重複する場合) */
+  noteReplacedByLive?: boolean;
 };
 
 /** fxtwitter で情報を取得するアカウント(@なし) */
 export const X_ACCOUNTS = ["maebahesioru2", "okubahesioru", "bosekimanianext"] as const;
 
 export const CONTACTS: ContactLink[] = [
-  { label: "X (メイン)", handle: "@maebahesioru2", url: "https://x.com/maebahesioru2", icon: "x", xAccount: "maebahesioru2", note: { ja: "フォロワー約7000人", en: "~7,000 followers" } },
+  { label: "X (メイン)", handle: "@maebahesioru2", url: "https://x.com/maebahesioru2", icon: "x", xAccount: "maebahesioru2", note: { ja: "フォロワー約7000人", en: "~7,000 followers" }, noteReplacedByLive: true },
   { label: "X (サブ)", handle: "@okubahesioru", url: "https://x.com/okubahesioru", icon: "x", xAccount: "okubahesioru" },
   { label: "X (鍵)", handle: "@bosekimanianext", url: "https://x.com/bosekimanianext", icon: "x", xAccount: "bosekimanianext", note: { ja: "FFならほぼ全員通します！", en: "I accept basically any follower back" } },
   { label: "Bluesky", handle: "@maebahesioru.bsky.social", url: "https://bsky.app/profile/maebahesioru.bsky.social", icon: "bluesky" },

@@ -114,9 +114,9 @@ export function LinksSection() {
         />
       </Reveal>
 
-      <div className="mt-7 grid grid-cols-1 gap-4 lg:grid-cols-[1.4fr_0.6fr]">
+      <div className="mt-7 grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
         <Reveal className="panel p-4">
-          <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3">
+          <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 2xl:grid-cols-3">
             {CONTACTS.map((c) => {
               const Icon = ICONS[c.icon];
               const live = c.xAccount ? accounts?.[c.xAccount] : undefined;
@@ -144,10 +144,9 @@ export function LinksSection() {
                     </span>
                   )}
                   <span className="min-w-0 flex-1">
+                    {/* 1行目: 自分で付けたラベル(どの垢か) — ライブ取得でも必ず出す */}
                     <span className="flex items-center gap-1.5">
-                      <span className="truncate text-[12.5px] font-semibold">
-                        {liveOk && live?.name ? live.name : c.label}
-                      </span>
+                      <span className="truncate text-[12.5px] font-semibold">{c.label}</span>
                       {liveOk && live?.protected ? (
                         <span className="shrink-0 text-[11px]" title={locale === "ja" ? "鍵アカウント" : "locked"}>
                           🔒
@@ -159,11 +158,18 @@ export function LinksSection() {
                         </span>
                       ) : null}
                     </span>
+                    {/* 2行目: ハンドル + FF数(ライブ時) */}
                     <span className="block truncate font-mono text-[11.5px] text-sub">
                       {liveOk && live?.followers !== undefined
                         ? `${c.handle} · ${locale === "ja" ? "FF" : "Followers"} ${live.followers.toLocaleString(locale === "ja" ? "ja-JP" : "en-US")}`
                         : c.handle}
                     </span>
+                    {/* 3行目: 現在の表示名(ライブ時のみ・変わっても追従) */}
+                    {liveOk && live?.name ? (
+                      <span className="mt-0.5 block truncate text-[11px] text-sub" title={live.name}>
+                        {live.name}
+                      </span>
+                    ) : null}
                   </span>
                 </>
               );
@@ -184,7 +190,7 @@ export function LinksSection() {
                       <span className="shrink-0 text-sub">↗</span>
                     </a>
                   )}
-                  {c.note && !(c.xAccount && accounts?.[c.xAccount]?.ok) ? (
+                  {c.note && !(c.noteReplacedByLive && c.xAccount && accounts?.[c.xAccount]?.ok) ? (
                     <p className="mt-1 pl-1 text-[11.5px] text-sub">{pick(c.note)}</p>
                   ) : null}
                   {c.secret ? (

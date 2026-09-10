@@ -4,6 +4,7 @@ import { useState } from "react";
 import { CONTACTS, DONATIONS, type IconName } from "@/lib/profile";
 import { useI18n } from "@/lib/i18n";
 import { SITE_URL } from "@/lib/site";
+import { relativeTime, useXAccounts } from "./useXAccounts";
 import { Reveal, SecretValue, SectionHeading } from "./ui";
 import {
   BitcoinIcon,
@@ -88,6 +89,7 @@ const BRAND: Record<IconName, string> = {
 export function LinksSection() {
   const { t, pick, locale } = useI18n();
   const [copied, setCopied] = useState(false);
+  const { accounts, fetchedAt } = useXAccounts();
 
   const snippet = `<a href="${SITE_URL}/" target="_blank" rel="noopener">\n  <img src="${SITE_URL}/banner.svg" width="200" height="40" alt="十字架_mania">\n</a>`;
 
@@ -104,7 +106,12 @@ export function LinksSection() {
   return (
     <section className="shell py-14">
       <Reveal>
-        <SectionHeading index="08" title={t("sec.links")} sub={`${CONTACTS.length} links`} id="links" />
+        <SectionHeading
+          index="08"
+          title={t("sec.links")}
+          sub={`${CONTACTS.length} links`}
+          id="links"
+        />
       </Reveal>
 
       <div className="mt-7 grid grid-cols-1 gap-4 lg:grid-cols-[1.4fr_0.6fr]">
@@ -112,17 +119,51 @@ export function LinksSection() {
           <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3">
             {CONTACTS.map((c) => {
               const Icon = ICONS[c.icon];
+              const live = c.xAccount ? accounts?.[c.xAccount] : undefined;
+              const liveOk = live?.ok === true;
+              // X は取得できた実データ(アイコン/表示名/FF数)を優先し、失敗時は静的表示にフォールバック
               const inner = (
                 <>
-                  <span
-                    className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-line bg-panel2"
-                    style={{ color: BRAND[c.icon] }}
-                  >
-                    <Icon className="h-4 w-4" />
-                  </span>
+                  {liveOk && live?.avatar ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={live.avatar}
+                      alt=""
+                      width={36}
+                      height={36}
+                      loading="lazy"
+                      referrerPolicy="no-referrer"
+                      className="h-9 w-9 shrink-0 rounded-lg border border-line object-cover"
+                    />
+                  ) : (
+                    <span
+                      className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-line bg-panel2"
+                      style={{ color: BRAND[c.icon] }}
+                    >
+                      <Icon className="h-4 w-4" />
+                    </span>
+                  )}
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[12.5px] font-semibold">{c.label}</span>
-                    <span className="block truncate font-mono text-[11.5px] text-sub">{c.handle}</span>
+                    <span className="flex items-center gap-1.5">
+                      <span className="truncate text-[12.5px] font-semibold">
+                        {liveOk && live?.name ? live.name : c.label}
+                      </span>
+                      {liveOk && live?.protected ? (
+                        <span className="shrink-0 text-[11px]" title={locale === "ja" ? "鍵アカウント" : "locked"}>
+                          🔒
+                        </span>
+                      ) : null}
+                      {liveOk && live?.verified ? (
+                        <span className="shrink-0 text-[10px] text-accent2" title="verified">
+                          ✔
+                        </span>
+                      ) : null}
+                    </span>
+                    <span className="block truncate font-mono text-[11.5px] text-sub">
+                      {liveOk && live?.followers !== undefined
+                        ? `${c.handle} · ${locale === "ja" ? "FF" : "Followers"} ${live.followers.toLocaleString(locale === "ja" ? "ja-JP" : "en-US")}`
+                        : c.handle}
+                    </span>
                   </span>
                 </>
               );
@@ -143,7 +184,9 @@ export function LinksSection() {
                       <span className="shrink-0 text-sub">↗</span>
                     </a>
                   )}
-                  {c.note ? <p className="mt-1 pl-1 text-[11.5px] text-sub">{pick(c.note)}</p> : null}
+                  {c.note && !(c.xAccount && accounts?.[c.xAccount]?.ok) ? (
+                    <p className="mt-1 pl-1 text-[11.5px] text-sub">{pick(c.note)}</p>
+                  ) : null}
                   {c.secret ? (
                     <div className="mt-1.5">
                       <SecretValue value={c.secret} />
@@ -153,6 +196,26 @@ export function LinksSection() {
               );
             })}
           </ul>
+          <p className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-line pt-3 text-[11.5px] text-sub">
+            <span className="flex items-center gap-1.5">
+              <span className={`h-1.5 w-1.5 rounded-full ${accounts ? "bg-emerald-400" : "bg-amber-400"} blink`} />
+              {locale === "ja"
+                ? "Xの情報は fxtwitter からリアルタイム取得しています"
+                : "X account info is fetched live from fxtwitter"}
+            </span>
+            {fetchedAt ? (
+              <>
+                <span className="opacity-60">·</span>
+                <a href="https://github.com/FixTweet/FxTwitter" target="_blank" rel="noopener noreferrer" className="link">
+                  fxtwitter
+                </a>
+                <span className="opacity-60">·</span>
+                <span>
+                  {locale === "ja" ? "更新" : "updated"}: {relativeTime(fetchedAt, locale)}
+                </span>
+              </>
+            ) : null}
+          </p>
         </Reveal>
 
         <div className="flex flex-col gap-4">

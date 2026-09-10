@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { APP_TOOLS, PROFILE, PROJECTS } from "@/lib/profile";
 import { useI18n } from "@/lib/i18n";
+import { Favicon } from "./Favicon";
 import { GlowCard, Reveal, SectionHeading } from "./ui";
 
 export function Projects() {
@@ -19,10 +20,18 @@ export function Projects() {
           <Reveal key={p.name} delay={i * 60}>
             <GlowCard className="group flex h-full flex-col">
               <div className="mb-3 flex items-start justify-between gap-2">
-                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-line bg-panel2 font-mono text-xs text-accent2">
-                  {String(i + 1).padStart(2, "0")}
+                {/* 左のマスは各サイトの favicon を自動取得して表示(取れなければ番号) */}
+                <span className="grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-lg border border-line bg-panel2">
+                  <Favicon
+                    url={p.url}
+                    size={20}
+                    fallback={<span className="font-mono text-xs text-accent2">{String(i + 1).padStart(2, "0")}</span>}
+                  />
                 </span>
-                <span className="chip">{pick(p.tag)}</span>
+                <span className="flex items-center gap-2">
+                  <span className="font-mono text-[10.5px] text-sub">{String(i + 1).padStart(2, "0")}</span>
+                  <span className="chip">{pick(p.tag)}</span>
+                </span>
               </div>
               <h3 className="text-[15px] leading-snug font-bold">{p.name}</h3>
               <p className="mt-2 text-[13px] leading-relaxed text-sub">{pick(p.desc)}</p>

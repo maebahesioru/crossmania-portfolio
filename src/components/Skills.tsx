@@ -6,10 +6,15 @@ import { useI18n } from "@/lib/i18n";
 import { Reveal, SectionHeading } from "./ui";
 
 /** Skills をローディング風プログレスバーで見せる */
+/** 行ごとの開始遅延とバーの伸びる時間(完了判定と共有する) */
+const ROW_DELAY_MS = 140;
+const BAR_DURATION_MS = 900;
+
 export function Skills() {
   const { t, pick, locale } = useI18n();
   const ref = useRef<HTMLDivElement | null>(null);
   const [started, setStarted] = useState(false);
+  const [done, setDone] = useState(false);
 
   useEffect(() => {
     const el = ref.current;
@@ -29,6 +34,14 @@ export function Skills() {
     return () => io.disconnect();
   }, []);
 
+  // 「完了」はバーが伸び切ってから出す(到達時点で出すと未完了なのに完了表示になる)
+  useEffect(() => {
+    if (!started) return;
+    const total = (SKILLS.length - 1) * ROW_DELAY_MS + BAR_DURATION_MS;
+    const id = setTimeout(() => setDone(true), total + 120);
+    return () => clearTimeout(id);
+  }, [started]);
+
   return (
     <section className="shell py-14">
       <Reveal>
@@ -40,14 +53,14 @@ export function Skills() {
           <div className="mb-4 flex items-center justify-between font-mono text-[11.5px] text-sub">
             <span>▚ loading profile…</span>
             <span className="flex items-center gap-2">
-              <span className={`h-1.5 w-1.5 rounded-full ${started ? "bg-emerald-400" : "bg-amber-400"} blink`} />
-              {started ? (locale === "ja" ? "完了" : "ready") : t("loading")}
+              <span className={`h-1.5 w-1.5 rounded-full ${done ? "bg-emerald-400" : "bg-amber-400"} blink`} />
+              {done ? (locale === "ja" ? "完了" : "ready") : t("loading")}
             </span>
           </div>
 
           <div className="flex flex-col gap-5">
             {SKILLS.map((s, i) => (
-              <SkillRow key={s.name} name={s.name} level={s.level} note={pick(s.note)} delay={i * 140} started={started} />
+              <SkillRow key={s.name} name={s.name} level={s.level} note={pick(s.note)} delay={i * ROW_DELAY_MS} started={started} />
             ))}
           </div>
         </Reveal>
@@ -102,22 +115,26 @@ function SkillRow({
   started: boolean;
 }) {
   const pct = Math.round(level * 100);
-  const [shown, setShown] = useState(0);
+  const [progress, setProgress] = useState(0);
 
+  // 数字とバーを同じ進捗値から描く(別々のアニメーションだと必ずズレて「変」に見える)
   useEffect(() => {
     if (!started) return;
     let raf = 0;
     const t0 = performance.now() + delay;
-    const dur = 1400;
+    const dur = BAR_DURATION_MS;
     const tick = (now: number) => {
       const p = Math.max(0, Math.min(1, (now - t0) / dur));
       const eased = 1 - Math.pow(1 - p, 3);
-      setShown(Math.round(eased * pct));
+      setProgress(eased);
       if (p < 1) raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [started, delay, pct]);
+  }, [started, delay]);
+
+  const shown = Math.round(progress * pct);
+  const width = progress * pct;
 
   return (
     <div>
@@ -127,15 +144,23 @@ function SkillRow({
           {note ? <span className="text-[11.5px] text-sub">({note})</span> : null}
         </span>
         <span className="font-mono text-xs tabular-nums text-sub">
-          <span className="text-accent2">{shown}%</span> · {(shown / 100).toFixed(1)}人前
+          <span className="text-accent2">{shown}%</span> · {(shown / 100).toFixed(2).replace(/0$/, "")}人前
         </span>
       </div>
-      <div className="relative h-2.5 overflow-hidden rounded-full border border-line bg-panel2">
+      <div className="skill-track h-2.5 rounded-full border border-line bg-panel2">
         <div
-          className="skill-fill absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-accent to-accent2"
-          style={{ width: started ? `${pct}%` : 0, transitionDelay: `${delay}ms` }}
+          className="skill-fill absolute inset-y-0 left-0 rounded-full"
+          style={{
+            width: `${width}%`,
+            // グラデーションは「トラック幅」を基準に固定する。バーごとに完走させると
+            // 20%のバーも70%のバーも同じ色分布になり、色が値を表さなくなる。
+            // background-size を (100 / 幅%) 倍にすると、細いバーでも同じ色スケールを切り取る。
+            backgroundImage: "linear-gradient(90deg, var(--accent), var(--accent-2))",
+            backgroundSize: width > 0 ? `${(10000 / width).toFixed(3)}% 100%` : "100% 100%",
+            backgroundRepeat: "no-repeat",
+          }}
         />
-        <div className="absolute inset-0 opacity-40 [background:repeating-linear-gradient(90deg,transparent_0_6px,var(--bg)_6px_8px)]" />
+        {/* 塗りバーの上に別レイヤーの模様を重ねない(縞が塗りを分断して壊れて見える) */}
       </div>
     </div>
   );

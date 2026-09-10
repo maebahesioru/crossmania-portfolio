@@ -64,7 +64,31 @@ MSYS_NO_PATHCONV=1 taskkill /F /PID $PID
 
 ```bash
 python scripts/gen-assets.py   # public/icon-192/512, apple-icon.png, og.png を再生成 (Pillow 必須)
+python scripts/upscale-hero.py <元画像.png>   # ヒーローキャラを4倍超解像 (下記)
 ```
+
+### ヒーローキャラの高画質化パイプライン
+
+`scripts/upscale-hero.py` は **Real-ESRGAN (ncnn/Vulkan ポータブル版)** を呼んで、
+低解像度の素材を表示に耐える解像度まで引き上げる。
+
+1. `realesrgan-x4plus-anime` で4倍超解像 (446×559 → 1784×2236)
+2. 明背景切り抜き由来の**白フチ除去** + アルファの帯を締めてゴミを削除
+3. 可視領域でトリム
+4. 目標幅まで **Lanczos でスーパーサンプリング縮小**(過剰シャープのハローを消しつつ精細さを残す)
+5. `hero-character.png`(フォールバック) と `hero-character.webp`(本命) を出力
+
+`.tools/resrgan/realesrgan-ncnn-vulkan.exe` が必要(gitには含めない):
+
+```bash
+mkdir -p .tools && cd .tools
+curl -sLO https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesrgan-ncnn-vulkan-20220424-windows.zip
+python -c "import zipfile;zipfile.ZipFile('resrgan.zip').extractall('resrgan')"
+```
+
+配信は `<picture>` で WebP を優先し、PNG にフォールバックする
+(1240×1597: PNG 1.4MB / WebP 236KB)。表示は最大 497×640 CSS px なので
+Retina でも 2.5倍以上の画素密度になる。
 
 ## デプロイ
 

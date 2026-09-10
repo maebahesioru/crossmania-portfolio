@@ -61,13 +61,16 @@ export function HeroHeader() {
             aria-hidden
           />
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/hero-character.png"
-            alt="十字架_mania のキャラクター"
-            width={374}
-            height={482}
-            className="hero-char relative h-72 w-auto drop-shadow-[0_16px_34px_rgba(0,0,0,0.5)] sm:h-80 md:h-[480px] lg:h-[560px] xl:h-[640px]"
-          />
+          <picture className="block">
+            <source srcSet="/hero-character.webp" type="image/webp" />
+            <img
+              src="/hero-character.png"
+              alt="十字架_mania のキャラクター"
+              width={1240}
+              height={1597}
+              className="hero-char relative h-72 w-auto drop-shadow-[0_16px_34px_rgba(0,0,0,0.5)] sm:h-80 md:h-[480px] lg:h-[560px] xl:h-[640px]"
+            />
+          </picture>
         </div>
       </div>
     </div>

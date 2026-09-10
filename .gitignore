@@ -43,3 +43,8 @@ next-env.d.ts
 # local data & verification
 /data/
 /.verify/
+
+# 画像アップスケール用のツール(Real-ESRGAN ncnn portable)
+/.tools/resrgan/
+/.tools/*.zip
+/.tools/work/

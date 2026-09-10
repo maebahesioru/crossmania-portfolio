@@ -22,8 +22,12 @@ export function BlogExplorer({ compact = false, limit }: { compact?: boolean; li
     });
   }, [q, src]);
 
-  const cap = limit ?? (compact && !expand ? 6 : 999);
-  const shown = filtered.slice(0, cap);
+  /** 絞り込み中は「もっと見る」で隠さない(検索結果は全部出す) */
+  const filtering = q.trim() !== "" || src !== "all";
+  const base = limit ?? 6;
+  const collapsed = compact && !expand && !filtering;
+  const shown = collapsed ? filtered.slice(0, base) : filtered;
+  const hiddenCount = filtered.length - shown.length;
 
   const counts = useMemo(() => {
     const m: Record<string, number> = { all: BLOG.length };
@@ -125,14 +129,15 @@ export function BlogExplorer({ compact = false, limit }: { compact?: boolean; li
         <p className="panel mt-4 p-6 text-center text-sm text-sub">{t("blog.noresult")}</p>
       ) : null}
 
-      {compact && !expand && filtered.length > 6 ? (
+      {compact && !filtering && (hiddenCount > 0 || expand) ? (
         <div className="mt-5 flex justify-center">
           <button
             type="button"
-            onClick={() => setExpand(true)}
+            onClick={() => setExpand((v) => !v)}
+            aria-expanded={expand}
             className="rounded-full border border-line px-5 py-2 text-sm text-sub transition hover:border-accent hover:text-fg"
           >
-            {t("blog.more")} ({filtered.length - 6})
+            {expand ? t("blog.less") : `${t("blog.more")} (${hiddenCount})`}
           </button>
         </div>
       ) : null}

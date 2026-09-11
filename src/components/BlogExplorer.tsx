@@ -1,7 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { BLOG, SOURCES, type SourceKey } from "@/lib/profile";
+import { useEffect, useMemo, useState } from "react";
+import { BLOG, SOURCES, type BlogPost, type SourceKey } from "@/lib/profile";
+import type { BlogFeed } from "@/lib/blog";
+import { subscribeBlogFeed } from "@/lib/blogFeed";
 import { useI18n } from "@/lib/i18n";
 import { Reveal, SectionHeading } from "./ui";
 
@@ -12,15 +14,26 @@ export function BlogExplorer({ compact = false, limit }: { compact?: boolean; li
   const [q, setQ] = useState("");
   const [src, setSrc] = useState<SourceKey | "all">("all");
   const [expand, setExpand] = useState(false);
+  /**
+   * 記事一覧は /api/blog が note(RSS) / Qiita(Atom) / ビーストノート(公開一覧) / X(公開タイムライン)
+   * から自動で集めてくる。SSR では profile.ts の既知一覧をそのまま描き、マウント後に
+   * 差し替える — こうすると初回描画が空にならず、自動更新分だけが後から乗る。
+   * 取得は blogFeed の共有ストア経由(見出しの件数表示と同じ1回のフェッチを共有する)。
+   */
+  const [feed, setFeed] = useState<BlogFeed | null>(null);
+
+  useEffect(() => subscribeBlogFeed(setFeed), []);
+
+  const posts: BlogPost[] = feed?.posts ?? BLOG;
 
   const filtered = useMemo(() => {
     const query = q.trim().toLowerCase();
-    return BLOG.filter((p) => {
+    return posts.filter((p) => {
       if (src !== "all" && p.source !== src) return false;
       if (!query) return true;
       return p.title.toLowerCase().includes(query) || SOURCES[p.source].label.toLowerCase().includes(query);
     });
-  }, [q, src]);
+  }, [q, src, posts]);
 
   /** 絞り込み中は「もっと見る」で隠さない(検索結果は全部出す) */
   const filtering = q.trim() !== "" || src !== "all";
@@ -30,20 +43,20 @@ export function BlogExplorer({ compact = false, limit }: { compact?: boolean; li
   const hiddenCount = filtered.length - shown.length;
 
   const counts = useMemo(() => {
-    const m: Record<string, number> = { all: BLOG.length };
-    for (const p of BLOG) m[p.source] = (m[p.source] ?? 0) + 1;
+    const m: Record<string, number> = { all: posts.length };
+    for (const p of posts) m[p.source] = (m[p.source] ?? 0) + 1;
     return m;
-  }, []);
+  }, [posts]);
 
   return (
     <section className="shell py-14">
       {!compact ? (
         <Reveal>
-          <SectionHeading index="06" title={t("sec.blog")} sub={`${BLOG.length} posts`} id="blog" />
+          <SectionHeading index="06" title={t("sec.blog")} sub={`${posts.length} posts`} id="blog" />
         </Reveal>
       ) : (
         <Reveal>
-          <SectionHeading index="06" title={t("sec.blog")} sub={`${BLOG.length} posts / note · Qiita · ビーストノート · X`} id="blog" />
+          <SectionHeading index="06" title={t("sec.blog")} sub={`${posts.length} posts / note · Qiita · ビーストノート · X`} id="blog" />
         </Reveal>
       )}
 
@@ -96,9 +109,30 @@ export function BlogExplorer({ compact = false, limit }: { compact?: boolean; li
         </div>
       </Reveal>
 
-      <p className="mt-3 font-mono text-[11.5px] text-sub">
-        {filtered.length} {t("blog.count")}
-        {q ? ` — "${q}"` : ""}
+      <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[11.5px] text-sub">
+        <span>
+          {filtered.length} {t("blog.count")}
+          {q ? ` — "${q}"` : ""}
+        </span>
+        {feed ? (
+          <span className="flex items-center gap-1.5" title={t("blog.live")}>
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-accent2" aria-hidden />
+            <span>{t("blog.auto")}</span>
+            <span className="opacity-70">
+              {t("blog.synced")} {feed.fetchedAt.slice(11, 16)} UTC
+            </span>
+          </span>
+        ) : null}
+        {/* 取れなかったソースだけ注記する(全部落ちた時に黙って古い一覧を出すのを避ける) */}
+        {feed
+          ? (Object.entries(feed.status) as [SourceKey, { ok: boolean; error?: string }][])
+              .filter(([, s]) => !s.ok)
+              .map(([k, s]) => (
+                <span key={k} className="text-accent" title={s.error ?? ""}>
+                  {SOURCES[k].label}: {t("blog.srcfail")}
+                </span>
+              ))
+          : null}
       </p>
 
       <ul className="mt-4 grid grid-cols-1 gap-2.5 lg:grid-cols-2">
@@ -114,8 +148,9 @@ export function BlogExplorer({ compact = false, limit }: { compact?: boolean; li
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block text-[13.5px] leading-snug font-medium group-hover:text-link">{p.title}</span>
-                  <span className="mt-1 block truncate font-mono text-[11.5px] text-sub">
-                    {p.url.replace(/^https?:\/\//, "").slice(0, 64)}
+                  <span className="mt-1 flex items-baseline gap-2 font-mono text-[11.5px] text-sub">
+                    {p.date ? <span className="shrink-0 tabular-nums">{p.date.replace(/-/g, ".")}</span> : null}
+                    <span className="truncate">{p.url.replace(/^https?:\/\//, "").slice(0, 56)}</span>
                   </span>
                 </span>
                 <span className="shrink-0 text-sub transition group-hover:translate-x-0.5 group-hover:text-link">↗</span>
@@ -151,4 +186,15 @@ export function BlogExplorer({ compact = false, limit }: { compact?: boolean; li
       ) : null}
     </section>
   );
+}
+
+/**
+ * 見出し用のライブ件数。
+ * ⚠️ サーバー側で `BLOG.length` を焼き込むと、自動取得で記事が増えたときに
+ *    「見出し 22 / 一覧 29」と食い違う(実測)。一覧と同じ共有フェッチから数える。
+ */
+export function BlogCount({ fallback }: { fallback: number }) {
+  const [n, setN] = useState<number | null>(null);
+  useEffect(() => subscribeBlogFeed((f) => setN(f.posts.length)), []);
+  return <>{n ?? fallback}</>;
 }

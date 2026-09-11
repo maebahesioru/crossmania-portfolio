@@ -24,7 +24,8 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
  */
 const LIGHT_PLATE = "rgba(255,255,255,0.92)"; // 背景に沈む暗いアイコン用
 const DARK_PLATE = "rgba(0,0,0,0.18)"; // 背景に沈む明るいアイコン用
-const MIN_COLOR_DIST = 0.28; // アイコン代表色と背景の色差がこれ未満なら「沈む」と判定
+const MIN_COLOR_DIST = 0.28; // この色差以上の画素を「背景から区別できている」とみなす
+const VISIBLE_FRAC = 0.22; // 区別できている画素がこれを超えていれば下地は不要
 const MAX_DIST = 441.673; // sqrt(255^2 * 3)
 
 type RGB = [number, number, number];
@@ -102,42 +103,37 @@ export function Favicon({
       ctx.drawImage(el, 0, 0, S, S);
       const d = ctx.getImageData(0, 0, S, S).data;
 
-      // 不透明画素を4bitに量子化して最頻色(=アイコンの地の色)を求める
-      const hist = new Map<number, { n: number; r: number; g: number; b: number }>();
+      // 「背景と十分に色が違う画素」がどれだけあるかで判定する。
+      // ⚠️ 最頻色だけで判定すると、写真アイコン(色がバラバラ)で誤って下地が敷かれる(実測)。
+      //    アイコンが背景に沈むかどうかは「見えている画素の割合」で見るのが正しい。
+      const bg = themeBg();
       let opaque = 0;
+      let contrasting = 0;
+      let sum = [0, 0, 0];
       for (let i = 0; i < d.length; i += 4) {
         if (d[i + 3] / 255 <= 0.5) continue;
         opaque++;
-        const r = d[i];
-        const g = d[i + 1];
-        const b = d[i + 2];
-        const key = ((r >> 4) << 8) | ((g >> 4) << 4) | (b >> 4);
-        const cur = hist.get(key);
-        if (cur) {
-          cur.n++;
-          cur.r += r;
-          cur.g += g;
-          cur.b += b;
-        } else {
-          hist.set(key, { n: 1, r, g, b });
-        }
+        const px: RGB = [d[i], d[i + 1], d[i + 2]];
+        sum = [sum[0] + px[0], sum[1] + px[1], sum[2] + px[2]];
+        if (colorDistance(px, bg) >= MIN_COLOR_DIST) contrasting++;
       }
       if (!opaque) return;
-      let best = { n: 0, r: 0, g: 0, b: 0 };
-      for (const v of hist.values()) if (v.n > best.n) best = v;
-      const dominant: RGB = [Math.round(best.r / best.n), Math.round(best.g / best.n), Math.round(best.b / best.n)];
 
-      const bg = themeBg();
-      const dist = colorDistance(dominant, bg);
-      if (dist >= MIN_COLOR_DIST) {
-        setPlate(null); // 既にカード地と区別できるので下地は不要
+      const contrastFrac = contrasting / opaque;
+      if (contrastFrac >= VISIBLE_FRAC) {
+        setPlate(null); // 十分に見えているので下地は不要
         return;
       }
-      // 沈む色なので、アイコンと反対の明るさの下地を敷く
-      const iconLum = (0.299 * dominant[0] + 0.587 * dominant[1] + 0.114 * dominant[2]) / 255;
-      const bgLum = (0.299 * bg[0] + 0.587 * bg[1] + 0.114 * bg[2]) / 255;
-      // アイコンが暗ければ明るい下地、明るければ暗い下地(どちらも背景と差が出る方を選ぶ)
-      setPlate(iconLum <= bgLum ? LIGHT_PLATE : DARK_PLATE);
+      // 大半が背景色に溶けるアイコン → 下地を敷く。
+      // ⚠️ 「背景との明暗」で選ぶと失敗する(実測: 背景とほぼ同じ暗さのアイコンに
+      //    暗い下地が選ばれ、コントラスト0%で完全に沈んだ)。
+      //    下地は「アイコン自身」と十分に差が出る方を選ぶ。
+      const avg: RGB = [Math.round(sum[0] / opaque), Math.round(sum[1] / opaque), Math.round(sum[2] / opaque)];
+      const light: RGB = [255, 255, 255];
+      const dark: RGB = [Math.round(17 * 0.82), Math.round(28 * 0.82), Math.round(51 * 0.82)];
+      const dLight = colorDistance(avg, light);
+      const dDark = colorDistance(avg, dark);
+      setPlate(dLight >= dDark ? LIGHT_PLATE : DARK_PLATE);
     } catch {
       /* 測定できなければ下地なし */
     }
@@ -171,10 +167,17 @@ export function Favicon({
     ? `/api/favicon?url=${encodeURIComponent(url)}`
     : `/api/favicon?host=${encodeURIComponent(host)}`;
 
+  // ⚠️ 下地は必ずアイコンと同じ大きさにする。親(44px等)いっぱいに敷くと、
+  //    アイコンの周囲が白いリングになって「余白がすごい」と見える(実測・指摘された)。
+  const platePad = 6;
   return (
     <span
-      className="grid h-full w-full place-items-center"
-      style={{ background: plate ?? "transparent" }}
+      className="grid place-items-center rounded-md"
+      style={
+        plate
+          ? { background: plate, width: size + platePad, height: size + platePad }
+          : { background: "transparent", width: size, height: size }
+      }
       aria-hidden="true"
     >
       {/* 外部サイトのfaviconを自前APIで中継するので next/image は使わない(最適化対象外) */}

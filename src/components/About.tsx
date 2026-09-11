@@ -23,7 +23,7 @@ export function Projects() {
                 <span className="grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-lg border border-line bg-panel2">
                   <Favicon
                     url={p.url}
-                    size={20}
+                    size={22}
                     fallback={<span className="font-mono text-xs text-accent2">{String(i + 1).padStart(2, "0")}</span>}
                   />
                 </span>
@@ -60,7 +60,7 @@ export function Projects() {
               <span className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-xl border border-line bg-panel2 text-lg">
                 <Favicon
                   url={tool.links[0]?.url ?? ""}
-                  size={22}
+                  size={26}
                   fallback={<span aria-hidden>{["🤖", "🌍", "字", "↩", "🎬"][i] ?? "🧩"}</span>}
                 />
               </span>

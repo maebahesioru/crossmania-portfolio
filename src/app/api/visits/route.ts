@@ -13,9 +13,36 @@ type Visits = {
 };
 
 const FILE = "visits.json";
+const BACKUP = "visits.backup.json";
 const EMPTY: Visits = { total: 0, days: {}, visitors: {}, seq: 0, first: null, last: null };
 const COOKIE = "cm_vid";
 const DEDUPE_MS = 4_000;
+
+/**
+ * カウンターの値が「消える・減る」のを防ぐ。
+ *
+ * ⚠️ この保護が無いと、ファイルが空になった/書き換えられた瞬間に累計が 0 に戻り、
+ *    復旧する手段が無くなる(実測: 開発中のクリーンアップで 0 に戻して累計を失った)。
+ *    - 読み込み: 本ファイルが空/壊れていたらバックアップから復元する
+ *    - 書き込み: 先に現在の内容をバックアップへ退避する
+ *    - 累計は単調増加: 読み込めた total がこれまでの最大値より小さければ最大値を採用する
+ */
+async function loadVisits(): Promise<Visits> {
+  const main = await readJson<Visits | null>(FILE, null);
+  const bak = await readJson<Visits | null>(BACKUP, null);
+
+  const valid = (v: Visits | null): v is Visits =>
+    !!v && typeof v.total === "number" && Number.isFinite(v.total);
+
+  const mainOk = valid(main) && main.total > 0;
+  const bakOk = valid(bak) && bak.total > 0;
+
+  if (!mainOk && !bakOk) return { ...EMPTY };
+  if (!mainOk && bakOk) return { ...bak };
+  if (mainOk && !bakOk) return { ...main };
+  // 両方ある → 累計が大きい方(訪問者台帳も大きい方)を土台にする
+  return (main as Visits).total >= (bak as Visits).total ? { ...(main as Visits) } : { ...(bak as Visits) };
+}
 
 function readCookie(req: Request, name: string): string | null {
   const raw = req.headers.get("cookie") || "";
@@ -33,7 +60,7 @@ export async function GET(req: Request) {
   const idHash = vid || hashId(`${ip}|${ua}|${jstString().slice(0, 10)}`);
 
   const result = await withLock(FILE, async () => {
-    const data = await readJson<Visits>(FILE, { ...EMPTY });
+    const data = await loadVisits();
     // 旧フォーマット(visitors が配列)からの移行
     if (Array.isArray((data as unknown as { visitors: unknown }).visitors)) {
       data.visitors = {};
@@ -73,6 +100,11 @@ export async function GET(req: Request) {
       if (!(k in data.visitors)) delete lastAt[k];
     }
 
+    // 書き込み前に現在の内容をバックアップへ退避(次回の復元元になる)
+    const prev = await readJson<Visits | null>(FILE, null);
+    if (prev && typeof prev.total === "number") {
+      await writeJson(BACKUP, prev);
+    }
     await writeJson(FILE, { ...data, _lastAt: lastAt });
     return {
       total: data.total,

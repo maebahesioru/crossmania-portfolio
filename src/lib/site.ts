@@ -1,5 +1,15 @@
 export const SITE_URL = process.env.SITE_URL || "https://hikamers.app";
 
+/**
+ * Tor ミラー(.onion)のアドレス。
+ *
+ * ⚠️ ハードコードしない。隠しサービスのアドレスは鍵から決まるので、
+ *    実体(onion コンテナ)を作るまで確定しないし、鍵を作り直すと変わる。
+ *    Coolify 側の環境変数 `NEXT_PUBLIC_ONION_URL` で渡す。
+ *    未設定ならミラーページは「準備中」を出す。
+ */
+export const ONION_URL = (process.env.NEXT_PUBLIC_ONION_URL || "").trim();
+
 export const SITE = {
   url: SITE_URL,
   name: "十字架_mania",

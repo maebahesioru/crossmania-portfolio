@@ -1,0 +1,22 @@
+# ビルドコンテキストから外すもの(イメージを無駄に太らせない & ローカルの秘蔵物を入れない)
+node_modules
+.next
+.git
+.gitignore
+
+# ローカル専用: 検証スクリプト・一時ファイル・開発ツール
+.verify
+.tools
+.assets
+data
+*.log
+
+# ローカルの環境変数(あれば)
+.env
+.env.local
+.env.*.local
+
+# OS / エディタ
+.DS_Store
+Thumbs.db
+.claude

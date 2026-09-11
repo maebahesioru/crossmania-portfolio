@@ -2,27 +2,36 @@
 
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n";
-import { Reveal } from "./ui";
+import { CopyButton, Reveal } from "./ui";
 
 /** ミラーページ(Onion) — 未公開なので「準備中」を明示する */
-export function MirrorContent() {
+export function MirrorContent({ clearnet, onion }: { clearnet: string; onion: string }) {
   const { locale, t } = useI18n();
 
+  /* ⚠️ .onion はここに直書きしない。アドレスは隠しサービスの鍵から決まるので、
+     実体を作るまで確定しない(環境変数 NEXT_PUBLIC_ONION_URL から受け取る)。 */
+  const clearnetLabel = clearnet.replace(/^https?:\/\//, "").replace(/\/$/, "");
   const rows = [
     {
       label: "Clearnet",
-      value: "hikamers.app",
+      value: clearnetLabel,
+      href: clearnet,
       live: true,
+      copy: false,
     },
     {
       label: ".onion",
-      value: "••••••••••••••••••••••••••••••••.onion",
-      live: false,
+      value: onion || "••••••••••••••••••••••••••••••••.onion",
+      href: onion ? `http://${onion}` : null,
+      live: Boolean(onion),
+      copy: Boolean(onion),
     },
     {
       label: "IPFS",
       value: "—",
+      href: null,
       live: false,
+      copy: false,
     },
   ];
 
@@ -42,9 +51,23 @@ export function MirrorContent() {
             {rows.map((r) => (
               <li key={r.label} className="flex items-center gap-3 px-4 py-3.5">
                 <span className="w-20 shrink-0 font-mono text-[11.5px] text-sub">{r.label}</span>
-                <code className={`min-w-0 flex-1 truncate font-mono text-[12.5px] ${r.live ? "text-link" : "text-sub line-through"}`}>
-                  {r.value}
-                </code>
+                {r.href ? (
+                  <a
+                    href={r.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="min-w-0 flex-1 truncate font-mono text-[12.5px] text-link hover:underline"
+                  >
+                    {r.value}
+                  </a>
+                ) : (
+                  <code
+                    className={`min-w-0 flex-1 truncate font-mono text-[12.5px] ${r.live ? "text-link" : "text-sub line-through"}`}
+                  >
+                    {r.value}
+                  </code>
+                )}
+                {r.copy ? <CopyButton value={r.value} label={r.value} /> : null}
                 {r.live ? (
                   <span className="shrink-0 rounded-full bg-emerald-500/15 px-2.5 py-0.5 font-mono text-[11.5px] text-emerald-400">
                     LIVE

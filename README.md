@@ -120,18 +120,25 @@ canonical / OGP / sitemap / RSS はすべて `SITE_URL` を参照するので、
 | note | 公式 RSS `note.com/<user>/rss` | ○ |
 | Qiita | 公式 Atom `qiita.com/<user>/feed` | ○ |
 | ビーストノート | 公開一覧 `/notes?page=N` を著者で絞る | ○ |
-| X | 埋め込み用公開タイムライン(syndication)から**長文のみ** | △ |
+| X | **手動**(既知 URL の日付だけ fxtwitter で最新化) | × |
 
 - 取得は**30分キャッシュ**(全ソース失敗時は5分)。SW は `/api/` をキャッシュしないので常に最新。
 - **`profile.ts` の BLOG は消さない**。note の RSS は最新10件しか返さないので、置き換えると古い記事が消える。取得結果と**和集合**を取る設計。
 - 取得に失敗したソースは `data/blog-cache.json` の前回結果で埋める(429等で一覧が縮まない)。
 
+### なぜ X だけ手動なのか
+
+X は**新規投稿の自動検知をやめた**(手動運用)。理由と、やろうとした場合の手段を残しておく:
+
+- タイムライン自体は取れる。`https://syndication.twitter.com/srv/timeline-profile/screen-name/<user>` が認証不要で 99 件分の `full_text` / `created_at` / `permalink` を返す。
+- ただし **X の「記事(Article)」はその一覧に含まれない**(記事IDは生HTMLに1回も出ない)。サイトに載せたい長文はまさに記事なので、自動化しても取りこぼす。
+- そのうえ **Node の fetch では取れない**。undici は HTTP/1.1 で繋ぐため Cloudflare に**フィンガープリント単位で 429** を返される。同じ瞬間・同じUAで `bun fetch` と `node:http2` は 200、`node fetch` だけ 429。ヘッダをブラウザに寄せても無効(JA3 が鍵)で、`node:http2` が必要。
+- レート制限は 30回/15分(IP単位)。
+
+→ 手間に対して得られるものが少ないため手動。再開したい場合の実装は skill `nextjs-site-scaffolding` の `references/blog-auto-sync.md` にある。
+
 ### 落とし穴(すべて実測済み)
 
-- **syndication は HTTP/2 でないと 429**。Node の fetch(undici)は HTTP/1.1 で繋ぐため、Cloudflare に**フィンガープリント単位で弾かれる**。同じ瞬間・同じUAで `bun fetch` と `node:http2` は 200、`node fetch` だけ 429。ヘッダをブラウザに寄せても無効(JA3 が鍵)。→ `http2Get()` で取る。
-- **レート制限は 30回/15分**(IP単位)。30分キャッシュなら 2回/時で余裕。
-- **X の「記事(Article)」は自動検知できない**。タイムラインに含まれず、記事IDは生HTMLに1回も出ない。→ `profile.ts` の BLOG に手で足す。
-- **X は長文だけ拾う**(`X_MIN_LEN = 140`)。短い呟きまで載せるとブログ一覧が埋まる。
 - **件数を固定値でテストしない**。記事は自動で増えるので、テストは `/api/blog` の `counts` を基準にする(固定値22で書いていたため 29 になった瞬間に3件壊れた)。
 - 見出しの件数も**ライブ値**にする(`BlogCount`)。`BLOG.length` を焼き込むと「見出し22 / 一覧29」とズレる。
 

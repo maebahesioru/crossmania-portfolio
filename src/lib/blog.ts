@@ -9,12 +9,7 @@
  *   - Qiita          … 公式 Atom `https://qiita.com/<user>/feed`
  *   - ビーストノート … 公開一覧 `https://beast-note.yajuvideo.st/notes?page=N` を著者で絞る
  *                      (フィードは無い。`/text_contents` は要ログインだが `/notes` は公開)
- *   - X              … 埋め込み用の公開タイムライン
- *                      `https://syndication.twitter.com/srv/timeline-profile/screen-name/<user>`
- *                      から**長文の投稿だけ**を拾う(短い呟きは一覧が埋まるので除外)。
- *                      ⚠️ これは全投稿の時系列ではなく「最新＋話題の抜粋」。
- *                         さらに X の長文記事(Article)はこの一覧に含まれないため、
- *                         記事は profile.ts の BLOG に手で足す運用を併用する。
+ *   - X              … **手動運用**(新規検知はしない)。既知 URL の日付だけ fxtwitter で最新化。
  *
  * ⚠️ 取得できた一覧をそのまま置き換えてはいけない。**必ず既知の一覧と「和集合」を取る**。
  *    note の RSS は最新 10 件しか返さないので、置き換えると古い記事が一覧から消える。
@@ -29,19 +24,8 @@ const UA =
 export const NOTE_USER = "zyuuzika";
 export const QIITA_USER = "maebahesioru";
 export const BEASTNOTE_AUTHOR = "maebahesioru";
-export const X_USER = "maebahesioru2";
-
-/**
- * X の投稿を「記事」として一覧に載せる最小の本文長(文字数)。
- * X は短い呟きの方が多いので、そのまま全部載せるとブログ一覧が埋まる。
- * 長文の告知・まとめだけを記事として扱う。短い投稿も載せたい場合はこの値を下げる。
- */
-export const X_MIN_LEN = 140;
-
 const X_NOTE =
-  "X は埋め込み用の公開タイムライン(syndication)から長文の投稿だけを自動で拾っています。" +
-  "ただしこれは全投稿の時系列ではなく「最新＋話題の抜粋」で、X の長文記事(Article)はこの一覧に含まれません。" +
-  "記事を載せるときは profile.ts の BLOG に URL を1行足してください。";
+  "X は新規投稿を自動検知しません(手動運用)。載せるときは profile.ts の BLOG に URL を1行足してください。";
 
 export type SourceStatus = {
   ok: boolean;
@@ -77,66 +61,6 @@ async function http(url: string, ms = 9000): Promise<string> {
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.text();
-}
-
-/**
- * ⚠️ Node の fetch(undici)は **HTTP/1.1** で繋ぐため、syndication の前段(Cloudflare)に
- *    **TLS/HTTP フィンガープリント単位で 429** を返される(実測 2026-09):
- *      同じ瞬間・同じ UA で  bun の fetch → 200 / Node の fetch → 429 /
- *      Node の `node:http2` → 200。
- *    ヘッダをブラウザに寄せても(sec-fetch-* / Accept-Language / Referer 全部付けても)変わらない。
- *    **JA3 が鍵なのでヘッダでは回避できない。**
- *    → syndication だけは `node:http2` で取る。bun 実行時など http2 が無い環境では
- *      fetch にフォールバックする(その場合 bun 側は元から通る)。
- */
-async function http2Get(url: string, ms = 15000): Promise<string> {
-  const http2 = await import("node:http2");
-  const u = new URL(url);
-  return await new Promise<string>((resolve, reject) => {
-    const client = http2.connect(`${u.protocol}//${u.host}`);
-    const timer = setTimeout(() => {
-      try {
-        client.close();
-      } catch {
-        /* ignore */
-      }
-      reject(new Error("timeout"));
-    }, ms);
-    let body = "";
-    let status = 0;
-    client.on("error", (e) => {
-      clearTimeout(timer);
-      reject(e);
-    });
-    const req = client.request({
-      ":path": u.pathname + u.search,
-      ":method": "GET",
-      "user-agent": UA,
-      accept: "*/*",
-    });
-    req.on("response", (hd) => {
-      status = Number(hd[":status"] ?? 0);
-    });
-    req.setEncoding("utf8");
-    req.on("data", (d: string) => {
-      body += d;
-    });
-    req.on("end", () => {
-      clearTimeout(timer);
-      try {
-        client.close();
-      } catch {
-        /* ignore */
-      }
-      if (status >= 200 && status < 300) resolve(body);
-      else reject(new Error(`HTTP ${status}`));
-    });
-    req.on("error", (e) => {
-      clearTimeout(timer);
-      reject(e);
-    });
-    req.end();
-  });
 }
 
 /** RSS(2.0)の <item> を雑に取り出す。フィード用途なので厳密な XML 解釈は不要 */
@@ -327,122 +251,43 @@ async function fetchBeastNote(seeds: string[]): Promise<BlogPost[]> {
 }
 
 /**
- * X の投稿一覧を「syndication」から取る。
+ * X は**手動運用**。新規投稿の自動検知はしない(ユーザー判断で取りやめ)。
  *
- * ⚠️ 以前はここに「未認証ではタイムラインを取れない(実測)」と書いてあったが**誤り**。
- *    `https://syndication.twitter.com/srv/timeline-profile/screen-name/<user>` は
- *    認証不要で 200 を返し、`__NEXT_DATA__` に 99 件分の
- *    `full_text` / `created_at` / `id_str` / `permalink` が入っている(実測 2026-09)。
- *    埋め込みタイムライン用の公開エンドポイントで、RSS ブリッジは不要。
+ * ⚠️ 技術的には `https://syndication.twitter.com/srv/timeline-profile/screen-name/<user>` から
+ *    認証不要でタイムラインが取れる(HTTP/2 でないと Cloudflare に 429 を返されるので
+ *    `node:http2` が必要)。ただし X の「記事(Article)」はその一覧に含まれず自動検知できない。
+ *    経緯と手段は README と skill `nextjs-site-scaffolding` の
+ *    references/blog-auto-sync.md に残してある。
  *
- * ⚠️ ただしこれは「全投稿の時系列」ではなく**最新＋話題の投稿の抜粋**(99件)。
- *    新しい投稿は先頭に来るので新着検知には使えるが、過去の全投稿は辿れない。
- *    X の「記事(Article)」はこの一覧に含まれない(記事 ID は生 HTML に 1 回も出ない)。
- *    → 記事は `profile.ts` の BLOG に手で足す運用を併用する。
- *
- * ⚠️ **IP 単位のレート制限がある**(`x-rate-limit-limit: 30` を実測)。
- *    短時間に叩きすぎると 429 になるので、呼ぶのはキャッシュ越しの1回だけにする。
- */
-
-/**
- * syndication の HTML から投稿一覧を取り出す(純関数 — 保存した HTML でテストできる)。
- * 返すのは「長文かつ返信でない」投稿だけ。
- */
-export function parseXTimeline(html: string): BlogPost[] {
-  const m = html.match(/<script id="__NEXT_DATA__" type="application\/json">([\s\S]*?)<\/script>/);
-  if (!m) return [];
-  let data: unknown;
-  try {
-    data = JSON.parse(m[1]);
-  } catch {
-    return [];
-  }
-  const entries =
-    (data as { props?: { pageProps?: { timeline?: { entries?: unknown[] } } } })?.props
-      ?.pageProps?.timeline?.entries ?? [];
-
-  const out: BlogPost[] = [];
-  for (const raw of entries) {
-    const t = (raw as { content?: { tweet?: Record<string, unknown> } })?.content?.tweet;
-    if (!t) continue;
-    if (t.in_reply_to_screen_name || t.in_reply_to_status_id_str) continue; // 返信は記事ではない
-    const text = String(t.full_text ?? "").trim();
-    // 短い呟きまで載せると一覧が埋まるので、長文だけを「記事」として扱う
-    if ([...text].length < X_MIN_LEN) continue;
-
-    // 1行目を見出しにする。URL だけの行は見出しにしない
-    const firstLine = text
-      .split("\n")
-      .map((l) => l.trim())
-      .find((l) => l && !/^https?:\/\/\S+$/.test(l));
-    const title = (firstLine ?? text).replace(/https?:\/\/\S+/g, "").trim().slice(0, 110);
-    if (!title) continue;
-
-    const permalink = String(t.permalink ?? "");
-    const idStr = String(t.id_str ?? "");
-    if (!permalink && !idStr) continue;
-    const url = permalink
-      ? `https://x.com${permalink.startsWith("/") ? "" : "/"}${permalink}`
-      : `https://x.com/${X_USER}/status/${idStr}`;
-
-    out.push({
-      title,
-      url,
-      source: "x",
-      date: isoOrUndefined(String(t.created_at ?? "")),
-    });
-  }
-  return out;
-}
-
-async function fetchXTimeline(): Promise<BlogPost[]> {
-  const url = `https://syndication.twitter.com/srv/timeline-profile/screen-name/${X_USER}`;
-  let html: string;
-  try {
-    // HTTP/2 でないと 429 になる(上の http2Get のコメント参照)
-    html = await http2Get(url, 15000);
-  } catch {
-    html = await http(url, 15000);
-  }
-  return parseXTimeline(html);
-}
-
-/**
- * 既知の X 投稿 URL の日付とタイトルを fxtwitter で最新化する。
- * (上のタイムラインで拾えない「記事」は、この既知 URL 側で面倒を見る)
+ * ここでは既知の投稿 URL(profile.ts の BLOG)の日付とタイトルだけ fxtwitter で最新化する。
+ * 新しい投稿を載せるときは profile.ts の BLOG に URL を1行足す。
  */
 async function fetchX(urls: string[]): Promise<BlogPost[]> {
-  const [timeline, known] = await Promise.all([
-    fetchXTimeline().catch(() => [] as BlogPost[]),
-    (async () => {
-      const out: BlogPost[] = [];
-      await Promise.all(
-        urls.slice(0, 20).map(async (url) => {
-          const m = url.match(/status\/(\d+)/);
-          if (!m) return;
-          try {
-            const txt = await http(`https://api.fxtwitter.com/i/status/${m[1]}`, 9000);
-            const j = JSON.parse(txt) as {
-              tweet?: { created_at?: string; created_timestamp?: number; text?: string };
-            };
-            const t = j.tweet;
-            if (!t) return;
-            const date = t.created_timestamp
-              ? isoFromDate(new Date(t.created_timestamp * 1000))
-              : isoOrUndefined(t.created_at);
-            // 本文が URL だけ(X の長文記事)の場合はタイトルにしない
-            const body = (t.text ?? "").trim();
-            const title = /^https?:\/\/\S+$/.test(body) ? undefined : body.split("\n")[0].slice(0, 120);
-            out.push({ title: title || "", url, source: "x", date });
-          } catch {
-            /* 1件失敗しても他は活かす */
-          }
-        })
-      );
-      return out;
-    })(),
-  ]);
-  return [...timeline, ...known];
+  const out: BlogPost[] = [];
+  await Promise.all(
+    urls.slice(0, 20).map(async (url) => {
+      const m = url.match(/status\/(\d+)/);
+      if (!m) return;
+      try {
+        const txt = await http(`https://api.fxtwitter.com/i/status/${m[1]}`, 9000);
+        const j = JSON.parse(txt) as {
+          tweet?: { created_at?: string; created_timestamp?: number; text?: string };
+        };
+        const t = j.tweet;
+        if (!t) return;
+        const date = t.created_timestamp
+          ? isoFromDate(new Date(t.created_timestamp * 1000))
+          : isoOrUndefined(t.created_at);
+        // 本文が URL だけ(X の長文記事)の場合はタイトルにしない
+        const body = (t.text ?? "").trim();
+        const title = /^https?:\/\/\S+$/.test(body) ? undefined : body.split("\n")[0].slice(0, 120);
+        out.push({ title: title || "", url, source: "x", date });
+      } catch {
+        /* 1件失敗しても他は活かす */
+      }
+    })
+  );
+  return out;
 }
 
 /* -------------------------------------------------------------------- merge */

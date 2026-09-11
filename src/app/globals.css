@@ -468,31 +468,38 @@ body {
   overflow: hidden;
 }
 
-input,
-textarea,
-select,
-button {
-  font: inherit;
-  color: inherit;
-}
-input,
-textarea,
-select {
-  background: color-mix(in srgb, var(--panel-2) 60%, transparent);
-  border: 1px solid var(--line);
-  border-radius: 0.6rem;
-  padding: 0.55rem 0.75rem;
-}
-input::placeholder,
-textarea::placeholder {
-  color: color-mix(in srgb, var(--sub) 75%, transparent);
-}
-input:focus,
-textarea:focus,
-select:focus {
-  outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+/* フォーム部品の既定スタイル。
+   ⚠️ @layer base に入れること — レイヤー外の要素セレクタは Tailwind の utilities より
+   優先され、`pl-9` などのユーティリティが無視される。実測: 検索欄に `pl-9`(36px)を
+   指定していたのに padding-left が 12px のままで、絶対配置した 🔍 が
+   プレースホルダの先頭に重なり「記事を検索…」が「事を検索…」に見えていた。 */
+@layer base {
+  input,
+  textarea,
+  select,
+  button {
+    font: inherit;
+    color: inherit;
+  }
+  input,
+  textarea,
+  select {
+    background: color-mix(in srgb, var(--panel-2) 60%, transparent);
+    border: 1px solid var(--line);
+    border-radius: 0.6rem;
+    padding: 0.55rem 0.75rem;
+  }
+  input::placeholder,
+  textarea::placeholder {
+    color: color-mix(in srgb, var(--sub) 75%, transparent);
+  }
+  input:focus,
+  textarea:focus,
+  select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+  }
 }
 
 /* モバイルではヘッダーSVGの小さい文字が縮小されて読めなくなるため非表示にする */

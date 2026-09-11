@@ -1,0 +1,13 @@
+# hikamers.app の .onion 隠しサービス設定
+Log notice stdout
+
+# このコンテナは隠しサービス専用。クライアント用途の SOCKS は要らない。
+SocksPort 0
+
+HiddenServiceDir /var/lib/tor/hidden_service
+HiddenServiceVersion 3
+
+# 80 番で受けた HTTP を Traefik に流す。
+# 宛先は「接続のたび」に Docker の DNS で解決されるので、
+# アプリのコンテナが後から立ち上がっても動く。
+HiddenServicePort 80 coolify-proxy:80

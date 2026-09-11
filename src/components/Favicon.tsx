@@ -152,14 +152,24 @@ export function Favicon({
     }
   }, []);
 
+  // 拡張ストアのようにアイコンがページ内にしか無い場合は url で詳細ページを見せる。
+  // プロジェクトサイトのようにルートに favicon がある場合は host だけで十分。
   let host = "";
+  let isPage = false;
   try {
-    host = new URL(url).host;
+    const u = new URL(url);
+    host = u.host;
+    // ルート以外を指しているなら、そのページを見に行く
+    isPage = u.pathname !== "/" && u.pathname !== "";
   } catch {
     host = "";
   }
 
   if (failed || !host) return <>{fallback ?? null}</>;
+
+  const src = isPage
+    ? `/api/favicon?url=${encodeURIComponent(url)}`
+    : `/api/favicon?host=${encodeURIComponent(host)}`;
 
   return (
     <span
@@ -171,7 +181,7 @@ export function Favicon({
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         ref={ref}
-        src={`/api/favicon?host=${encodeURIComponent(host)}`}
+        src={src}
         alt=""
         width={size}
         height={size}

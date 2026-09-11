@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { APP_TOOLS, PROFILE, PROJECTS } from "@/lib/profile";
 import { useI18n } from "@/lib/i18n";
 import { Favicon } from "./Favicon";
@@ -57,8 +56,13 @@ export function Projects() {
         {APP_TOOLS.map((tool, i) => (
           <Reveal key={tool.name} delay={i * 60}>
             <GlowCard className="flex h-full gap-4">
-              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-accent/25 to-accent2/25 text-lg">
-                {["🤖", "🌍", "字", "↩", "🎬"][i] ?? "🧩"}
+              {/* アイコンはリンク先サイトの favicon を自動取得(取れなければ従来の絵文字) */}
+              <span className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-xl border border-line bg-panel2 text-lg">
+                <Favicon
+                  url={tool.links[0]?.url ?? ""}
+                  size={22}
+                  fallback={<span aria-hidden>{["🤖", "🌍", "字", "↩", "🎬"][i] ?? "🧩"}</span>}
+                />
               </span>
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
@@ -85,14 +89,6 @@ export function Projects() {
         ))}
       </div>
 
-      <Reveal className="mt-6">
-        <p className="text-xs text-sub">
-          {t("banner.hint2")}{" "}
-          <Link href="/bbs" className="link">
-            {t("nav.bbs")}
-          </Link>
-        </p>
-      </Reveal>
     </section>
   );
 }

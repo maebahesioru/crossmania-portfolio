@@ -26,13 +26,6 @@ export function MirrorContent({ clearnet, onion }: { clearnet: string; onion: st
       live: Boolean(onion),
       copy: Boolean(onion),
     },
-    {
-      label: "IPFS",
-      value: "—",
-      href: null,
-      live: false,
-      copy: false,
-    },
   ];
 
   return (

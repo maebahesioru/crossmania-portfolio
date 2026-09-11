@@ -5,7 +5,7 @@ import { MACHINES, PROFILE } from "@/lib/profile";
 import { useI18n } from "@/lib/i18n";
 import { Reveal, SectionHeading } from "./ui";
 
-export function RigSection() {
+export function RigSection({ onion }: { onion: string }) {
   const { t, pick, locale } = useI18n();
 
   return (
@@ -59,14 +59,35 @@ export function RigSection() {
           </p>
         </Reveal>
 
+        {/* ⚠️ .onion アドレスをここに直書きしない。鍵から決まる値なので環境変数から
+            props で受け取る(未設定なら「準備中」を出す)。 */}
         <Reveal className="panel flex flex-col p-5" delay={80}>
           <div className="flex items-center justify-between">
             <p className="label">{t("sec.mirror")}</p>
-            <span className="rounded-full border border-line px-2 py-0.5 text-[11.5px] text-sub line-through">{t("mirror.wip")}</span>
+            {onion ? (
+              <span className="shrink-0 rounded-full bg-emerald-500/15 px-2 py-0.5 font-mono text-[11.5px] text-emerald-400">
+                LIVE
+              </span>
+            ) : (
+              <span className="shrink-0 rounded-full border border-line px-2 py-0.5 text-[11.5px] text-sub">
+                {t("mirror.wip")}
+              </span>
+            )}
           </div>
           <p className="mt-2 text-[13px] leading-relaxed text-sub">{t("mirror.body")}</p>
-          <div className="mt-3 rounded-lg border border-dashed border-line bg-panel2 px-3 py-2 font-mono text-[11.5px] text-sub line-through">
-            http://••••••••••••••••.onion/
+          <div className="mt-3 truncate rounded-lg border border-line bg-panel2 px-3 py-2 font-mono text-[11.5px]">
+            {onion ? (
+              <a
+                href={`http://${onion}/`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-link hover:underline"
+              >
+                {onion}
+              </a>
+            ) : (
+              <span className="text-sub">—</span>
+            )}
           </div>
           <div className="mt-auto flex items-center justify-between pt-4">
             <span className="chip">🧅 {t("mirror.tor")}</span>

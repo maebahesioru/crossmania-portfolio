@@ -142,6 +142,64 @@ X は**新規投稿の自動検知をやめた**(手動運用)。理由と、や
 - **件数を固定値でテストしない**。記事は自動で増えるので、テストは `/api/blog` の `counts` を基準にする(固定値22で書いていたため 29 になった瞬間に3件壊れた)。
 - 見出しの件数も**ライブ値**にする(`BlogCount`)。`BLOG.length` を焼き込むと「見出し22 / 一覧29」とズレる。
 
+## デプロイ (hikamers.app)
+
+Coolify(self-hosted / <LAN-IP>)の **Application id=19 / uuid=`<APP-UUID>`** が
+`hikamers.app` を配信している。Traefik のルーターは custom_labels に入っている。
+
+| 項目 | 値 |
+|---|---|
+| リポジトリ | `maebahesioru/crossmania-portfolio` (branch `master`) |
+| ビルド | `dockerfile` / `/Dockerfile` |
+| ポート | 3000 |
+| 永続ボリューム | `<APP-UUID>_portfolio-data` → `/app/data` |
+
+```bash
+# デプロイ(force=true で作り直す)
+curl -X POST -H "Authorization: Bearer $COOLIFY_TOKEN" \
+  "https://coolify.hikamers.app/api/v1/deploy?uuid=<APP-UUID>&force=true"
+```
+
+- **`/app/data` の永続ボリュームは必須**。無いとコンテナ再作成のたびに訪問者カウンター・BBS・
+  blogキャッシュが消える。Coolify の API ではストレージを追加できないので DB に直接 INSERT する
+  (`local_persistent_volumes` / `resource_type='App\Models\Application'` / `resource_id=19`)。
+- POST/PATCH/DELETE は Cloudflare WAF が plain curl を 403 code 1010 で弾く。
+  `curl_cffi` の `impersonate="chrome124"` が必須。
+
+## Tor ミラー (.onion)
+
+**アドレス**: 環境変数 `NEXT_PUBLIC_ONION_URL` で渡す(ハードコードしない)。
+隠しサービスのアドレスは鍵から決まるので、実体を作るまで確定しない。未設定なら `/mirror` は「準備中」。
+
+構成は `onion/`(Dockerfile + torrc)。self-hosted 上で単体コンテナとして動かしている:
+
+```bash
+cd /data/hikamers-onion && git pull
+docker build -t hikamers-onion:latest onion/
+docker rm -f hikamers-onion
+docker run -d --name hikamers-onion --restart unless-stopped --network coolify \
+  -v hikamers-onion-data:/var/lib/tor hikamers-onion:latest
+docker exec hikamers-onion cat /var/lib/tor/hidden_service/hostname   # .onion アドレス
+```
+
+### なぜ Traefik 経由なのか
+
+**アプリのコンテナ名はデプロイのたびに変わる**(`<APP-UUID>-<毎回違う数字>`)。
+`--network-alias` も試したが **Coolify 4.1.2 では効かなかった**(アプリのエイリアスは
+コンテナ名だけのまま)。→ tor の転送先を安定した `coolify-proxy:80` にし、
+**Traefik 側に `Host(\`<onion>.onion\`)` のルーターを足して受ける**。
+
+```
+traefik.http.routers.onion.entryPoints=http
+traefik.http.routers.onion.rule=Host(`<onion>.onion`) && PathPrefix(`/`)
+traefik.http.routers.onion.service=http-0-<APP-UUID>
+```
+
+- 鍵は `hikamers-onion-data` ボリュームに永続化。**消すと .onion アドレスが変わる**ので消さない。
+- tor は宛先を接続時に解決するので、アプリが後から起動しても問題ない。
+- 疎通確認: `docker run --rm --network coolify curlimages/curl:latest \
+  --socks5-hostname <torproxy> :9050 http://<onion>.onion/`
+
 ## ライセンス
 
 - コード: **WTFPL v2**(`/license`)

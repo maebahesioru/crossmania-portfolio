@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { SKILLS } from "@/lib/profile";
+import { SKILLS, SKILL_GROUPS, type Skill } from "@/lib/profile";
 import { useI18n } from "@/lib/i18n";
 import { Reveal, SectionHeading } from "./ui";
 
@@ -9,6 +9,29 @@ import { Reveal, SectionHeading } from "./ui";
 /** 行ごとの開始遅延とバーの伸びる時間(完了判定と共有する) */
 const ROW_DELAY_MS = 140;
 const BAR_DURATION_MS = 900;
+
+/**
+ * 表示用のグループ。バーの開始遅延は**一覧全体で通し**にする
+ * (グループごとに 0 から数えると、下のグループが上のと同時に伸びてガタつく)。
+ */
+const GROUPS = (() => {
+  const out: {
+    kind: Skill["kind"];
+    label: { ja: string; en: string };
+    rows: { skill: Skill; delay: number }[];
+  }[] = [];
+  let i = 0;
+  for (const g of SKILL_GROUPS) {
+    const items = SKILLS.filter((s) => s.kind === g.kind);
+    if (!items.length) continue;
+    out.push({
+      kind: g.kind,
+      label: g.label,
+      rows: items.map((skill) => ({ skill, delay: i++ * ROW_DELAY_MS })),
+    });
+  }
+  return out;
+})();
 
 export function Skills() {
   const { t, pick, locale } = useI18n();
@@ -48,7 +71,9 @@ export function Skills() {
         <SectionHeading index="03" title={t("sec.skills")} sub={`${SKILLS.length} items / 人前スケール`} id="skills" />
       </Reveal>
 
-      <div ref={ref} className="mt-7 grid grid-cols-1 gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+      {/* ⚠️ items-start で各パネルを内容の高さにする。既定(stretch)だと、行数が増えた
+          左パネルに合わせて右パネルが引き伸ばされ、中央に数百pxの空白ができる。 */}
+      <div ref={ref} className="mt-7 grid grid-cols-1 items-start gap-4 lg:grid-cols-[1.15fr_0.85fr]">
         <Reveal className="panel p-5">
           <div className="mb-4 flex items-center justify-between font-mono text-[11.5px] text-sub">
             <span>▚ loading profile…</span>
@@ -58,9 +83,24 @@ export function Skills() {
             </span>
           </div>
 
-          <div className="flex flex-col gap-5">
-            {SKILLS.map((s, i) => (
-              <SkillRow key={s.name} name={s.name} level={s.level} note={pick(s.note)} delay={i * ROW_DELAY_MS} started={started} />
+          {/* ⚠️ グループは横並びにする。縦に積むと左パネルだけ 700px 近くになり、
+              右パネル(スケール+ツールボックス)との間に数百pxの空白ができる。
+              グループを列にすると高さが半分になり、右パネルとほぼ揃う。 */}
+          <div className="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-2">
+            {GROUPS.map((g) => (
+              <div key={g.kind} className="flex flex-col gap-5">
+                <p className="label">{pick(g.label)}</p>
+                {g.rows.map(({ skill, delay }) => (
+                  <SkillRow
+                    key={skill.name}
+                    name={skill.name}
+                    level={skill.level}
+                    note={pick(skill.note)}
+                    delay={delay}
+                    started={started}
+                  />
+                ))}
+              </div>
             ))}
           </div>
         </Reveal>
@@ -89,11 +129,12 @@ export function Skills() {
             </ul>
           </div>
           <div className="mt-auto flex flex-wrap gap-2 pt-1">
-            <span className="chip">HTML 0.7</span>
-            <span className="chip">JS/TS 0.5</span>
-            <span className="chip">Python 0.4</span>
-            <span className="chip">Linux 0.3</span>
-            <span className="chip">CSS 0.2</span>
+            {/* ⚠️ ここを手書きしないこと。SKILLS に足したのに片方だけ古いままになる事故が起きる */}
+            {SKILLS.map((s) => (
+              <span key={s.name} className="chip">
+                {s.name} {s.level}
+              </span>
+            ))}
           </div>
         </Reveal>
       </div>

@@ -85,14 +85,33 @@ export const PROFILE = {
   } as LText,
 };
 
-export type Skill = { name: string; level: number; note?: LText };
+export type Skill = {
+  name: string;
+  level: number;
+  /** 技術スキルか、ネット文化の「人前」か。一覧はこの単位で見出しを挟んで表示する */
+  kind: "tech" | "meme";
+  note?: LText;
+};
+
 /** 人前スケール(0.0〜1.0) */
 export const SKILLS: Skill[] = [
-  { name: "HTML", level: 0.7 },
-  { name: "JS / TS", level: 0.5, note: { ja: "半人前", en: "half a portion" } },
-  { name: "Python", level: 0.4 },
-  { name: "Linux", level: 0.3 },
-  { name: "CSS", level: 0.2 },
+  { name: "HTML", level: 0.7, kind: "tech" },
+  { name: "JS / TS", level: 0.5, kind: "tech", note: { ja: "半人前", en: "half a portion" } },
+  { name: "Python", level: 0.4, kind: "tech" },
+  { name: "Linux", level: 0.3, kind: "tech" },
+  { name: "CSS", level: 0.2, kind: "tech" },
+  // ネット文化の習熟度も同じ「人前」スケールで自己申告する(ネタ枠)
+  { name: "Hikakin_Mania", level: 0.8, kind: "meme" },
+  { name: "淫夢", level: 0.6, kind: "meme" },
+  { name: "恒心教", level: 0.4, kind: "meme" },
+  { name: "クッキー☆", level: 0.2, kind: "meme" },
+  { name: "必須アモト酸", level: 0.1, kind: "meme" },
+];
+
+/** Skills の見出し(表示順) */
+export const SKILL_GROUPS: { kind: Skill["kind"]; label: LText }[] = [
+  { kind: "tech", label: { ja: "技術", en: "technical" } },
+  { kind: "meme", label: { ja: "ネット文化", en: "internet culture" } },
 ];
 
 export type Project = {

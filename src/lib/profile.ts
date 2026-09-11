@@ -272,7 +272,7 @@ export type BlogPost = {
   title: string;
   url: string;
   source: SourceKey;
-  /** 公開日 (YYYY-MM-DD)。note/Qiita/ビーストノート は自動取得、X は fxtwitter から */
+  /** 公開日 (YYYY-MM-DD)。note/Qiita/野獣ノート は自動取得、X は fxtwitter から */
   date?: string;
 };
 export type SourceKey = "x" | "note" | "qiita" | "beastnote";
@@ -281,7 +281,7 @@ export const SOURCES: Record<SourceKey, { label: string; color: string }> = {
   x: { label: "X", color: "#1d9bf0" },
   note: { label: "note", color: "#2cb696" },
   qiita: { label: "Qiita", color: "#55c500" },
-  beastnote: { label: "ビーストノート", color: "#f0a02a" },
+  beastnote: { label: "野獣ノート", color: "#f0a02a" },
 };
 
 export const BLOG: BlogPost[] = [

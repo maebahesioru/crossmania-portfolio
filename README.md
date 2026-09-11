@@ -119,7 +119,7 @@ canonical / OGP / sitemap / RSS はすべて `SITE_URL` を参照するので、
 |---|---|---|
 | note | 公式 RSS `note.com/<user>/rss` | ○ |
 | Qiita | 公式 Atom `qiita.com/<user>/feed` | ○ |
-| ビーストノート | 公開一覧 `/notes?page=N` を著者で絞る | ○ |
+| 野獣ノート | 公開一覧 `/notes?page=N` を著者で絞る | ○ |
 | X | **手動**(既知 URL の日付だけ fxtwitter で最新化) | × |
 
 - 取得は**30分キャッシュ**(全ソース失敗時は5分)。SW は `/api/` をキャッシュしないので常に最新。

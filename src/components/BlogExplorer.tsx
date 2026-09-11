@@ -15,7 +15,7 @@ export function BlogExplorer({ compact = false, limit }: { compact?: boolean; li
   const [src, setSrc] = useState<SourceKey | "all">("all");
   const [expand, setExpand] = useState(false);
   /**
-   * 記事一覧は /api/blog が note(RSS) / Qiita(Atom) / ビーストノート(公開一覧) / X(公開タイムライン)
+   * 記事一覧は /api/blog が note(RSS) / Qiita(Atom) / 野獣ノート(公開一覧) / X(公開タイムライン)
    * から自動で集めてくる。SSR では profile.ts の既知一覧をそのまま描き、マウント後に
    * 差し替える — こうすると初回描画が空にならず、自動更新分だけが後から乗る。
    * 取得は blogFeed の共有ストア経由(見出しの件数表示と同じ1回のフェッチを共有する)。
@@ -56,7 +56,7 @@ export function BlogExplorer({ compact = false, limit }: { compact?: boolean; li
         </Reveal>
       ) : (
         <Reveal>
-          <SectionHeading index="06" title={t("sec.blog")} sub={`${posts.length} posts / note · Qiita · ビーストノート · X`} id="blog" />
+          <SectionHeading index="06" title={t("sec.blog")} sub={`${posts.length} posts / note · Qiita · 野獣ノート · X`} id="blog" />
         </Reveal>
       )}
 
@@ -180,7 +180,7 @@ export function BlogExplorer({ compact = false, limit }: { compact?: boolean; li
       {!compact ? (
         <p className="mt-4 text-xs text-sub">
           {locale === "ja"
-            ? "note / Qiita / ビーストノート / X に書いたものをまとめて検索できます。"
+            ? "note / Qiita / 野獣ノート / X に書いたものをまとめて検索できます。"
             : "Search everything I've written on note, Qiita, Beast Note and X."}
         </p>
       ) : null}

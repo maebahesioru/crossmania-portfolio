@@ -4,7 +4,7 @@ import { collectBlog, type BlogFeed } from "@/lib/blog";
 export const dynamic = "force-dynamic";
 
 /**
- * note / Qiita / ビーストノート / X の記事一覧をまとめて返す。
+ * note / Qiita / 野獣ノート / X の記事一覧をまとめて返す。
  *
  * 外部サイトを毎リクエスト叩くと相手にも負荷がかかるので、結果をメモリに持つ。
  * 取得成功は 30 分、**全ソース失敗は 5 分**で切る(失敗を長く引くと、直したのに

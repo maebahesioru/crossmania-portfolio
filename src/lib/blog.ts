@@ -1,13 +1,13 @@
 /**
  * ブログ記事の自動収集。
  *
- * note / Qiita / ビーストノート に新しい記事を投稿したら、サイト側が勝手に拾って
+ * note / Qiita / 野獣ノート に新しい記事を投稿したら、サイト側が勝手に拾って
  * 一覧を更新する。手で `profile.ts` を編集しなくてよい。
  *
  * ソースごとの取得手段(すべて実測で確認した):
  *   - note           … 公式 RSS `https://note.com/<user>/rss`(RSS 2.0)
  *   - Qiita          … 公式 Atom `https://qiita.com/<user>/feed`
- *   - ビーストノート … 公開一覧 `https://beast-note.yajuvideo.st/notes?page=N` を著者で絞る
+ *   - 野獣ノート … 公開一覧 `https://beast-note.yajuvideo.st/notes?page=N` を著者で絞る
  *                      (フィードは無い。`/text_contents` は要ログインだが `/notes` は公開)
  *   - X              … **手動運用**(新規検知はしない)。既知 URL の日付だけ fxtwitter で最新化。
  *
@@ -151,7 +151,7 @@ async function fetchQiita(): Promise<BlogPost[]> {
 }
 
 /**
- * ビーストノートの公開一覧 `/notes?page=N` を辿り、著者一致の記事を集める。
+ * 野獣ノートの公開一覧 `/notes?page=N` を辿り、著者一致の記事を集める。
  *
  * ⚠️ 以前は「フィードも一覧ページも無い(`/text_contents` は要ログイン)」と書いてあったが**誤り**。
  *    `/notes` は**ログイン不要の公開一覧**(20件/ページ、`?page=N` でページング)で、
@@ -239,7 +239,7 @@ async function fetchBeastNoteRelated(seeds: string[], maxSeeds = 5): Promise<Blo
 }
 
 /**
- * ビーストノートの記事を集める。公開一覧を優先し、取れなければ関連カードで保険をかける。
+ * 野獣ノートの記事を集める。公開一覧を優先し、取れなければ関連カードで保険をかける。
  */
 async function fetchBeastNote(seeds: string[]): Promise<BlogPost[]> {
   const knownOldest = BLOG.filter((p) => p.source === "beastnote" && p.date)

@@ -25,7 +25,16 @@ export function LicenseContent() {
     { name: "Geist / Geist Mono (next/font)", license: "SIL Open Font License 1.1", url: "https://vercel.com/font" },
     { name: "simple-icons (ブランドアイコン)", license: "CC0 1.0 Universal", url: "https://simpleicons.org/" },
     { name: "Open-Meteo (天気データ)", license: "CC BY 4.0 (attribution)", url: "https://open-meteo.com/" },
-    { name: "国旗絵文字 / 絵文字フォント", license: "各プラットフォームのライセンス", url: "" },
+    {
+      name: "Twemoji (絵文字の絵柄 / Twemoji Mozilla COLR)",
+      license: "CC BY 4.0 (attribution) — 絵文字は X と同じ図案で全環境統一",
+      url: "https://github.com/jdecked/twemoji",
+    },
+    {
+      name: "Twemoji Country Flags (国旗絵文字)",
+      license: "MIT",
+      url: "https://github.com/mozilla/twemoji-colr",
+    },
   ];
 
   return (

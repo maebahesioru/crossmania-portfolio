@@ -73,10 +73,39 @@
   --color-accent2: var(--accent-2);
   --color-link: var(--link);
 
-  --font-sans: var(--font-geist-sans), "Yu Gothic UI", "Hiragino Kaku Gothic ProN",
-    "Noto Sans JP", Meiryo, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, "JetBrains Mono", Consolas, monospace;
-  --font-serifjp: "Yu Mincho", "Hiragino Mincho ProN", "Noto Serif JP", "MS PMincho", serif;
+  --font-emoji: "Twemoji";
+  --font-sans: var(--font-emoji), var(--font-geist-sans), "Yu Gothic UI",
+    "Hiragino Kaku Gothic ProN", "Noto Sans JP", Meiryo, system-ui, sans-serif;
+  --font-mono: var(--font-emoji), var(--font-geist-mono), ui-monospace,
+    "JetBrains Mono", Consolas, monospace;
+  --font-serifjp: var(--font-emoji), "Yu Mincho", "Hiragino Mincho ProN",
+    "Noto Serif JP", "MS PMincho", serif;
+}
+
+/* --------------------------------------------------------------- Twemoji
+   絵文字を OS 任せにすると Windows(Segoe UI Emoji)・macOS(Apple Color Emoji)・
+   Android(Noto Color Emoji)で見た目がバラバラになる。Twemoji(X と同じ絵柄)を
+   自前で配信して全環境で揃える。
+
+   ⚠️ unicode-range が肝。指定した符号位置にしか適用されないので、通常の文字は
+      次のフォント(Geist / Yu Gothic 等)にそのまま流れる。
+   ⚠️ 矢印 U+2190-21FF は **わざと入れていない**。↗ ← ↑ ↓ → はリンクの装飾として
+      テキストのまま使っており、Twemoji の矢印(青い四角)になると UI が崩れる。
+   ⚠️ 国旗は別ファイル。Windows は国旗絵文字のグリフを持たず「JP」と文字で出るため、
+      専用フォント(GSUB リガチャで 2 文字 → 旗 1 グリフ)が必須。 */
+@font-face {
+  font-family: "Twemoji";
+  src: url("/fonts/twemoji.woff2") format("woff2");
+  font-display: swap;
+  unicode-range: U+203C, U+2049, U+2122, U+2139, U+2600-27BF, U+2900-29FF,
+    U+2B00-2BFF, U+1F000-1F1E5, U+1F200-1FAFF, U+FE0F, U+20E3, U+200D;
+}
+
+@font-face {
+  font-family: "Twemoji";
+  src: url("/fonts/twemoji-flags.woff2") format("woff2");
+  font-display: swap;
+  unicode-range: U+1F1E6-1F1FF;
 }
 
 /* ------------------------------------------------------------------ base */

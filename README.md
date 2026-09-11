@@ -116,4 +116,26 @@ canonical / OGP / sitemap / RSS はすべて `SITE_URL` を参照するので、
 - コード: **WTFPL v2**(`/license`)
 - 文章・イラスト・デザイン: © 十字架_mania
 - ブランドアイコン: simple-icons (CC0 1.0) / 天気: Open-Meteo (CC BY 4.0) / フォント: Geist (SIL OFL 1.1)
+- 絵文字: **Twemoji**(CC BY 4.0 / `public/fonts/twemoji.woff2`) + Twemoji Country Flags(MIT / `twemoji-flags.woff2`)
 - 煙緋などゲームキャラクターの権利は各社に帰属(非公式のファン活動)
+
+## 絵文字(Twemoji)
+
+OS の絵文字フォント(Windows=Segoe UI Emoji / macOS=Apple Color Emoji / Android=Noto)は
+環境ごとに絵柄が違う。X と同じ Twemoji を自前配信して全環境で揃えている。
+
+- `src/app/globals.css` の `@font-face` 2つ(`unicode-range` 付き) + `--font-emoji` で
+  本文のフォント鎖の**先頭**に入れる。`unicode-range` があるので通常の文字は次のフォントに流れる。
+- **矢印 U+2190-21FF はわざと範囲から外している** — ↗ ← ↑ ↓ → はリンク装飾として
+  テキストのまま使っており、Twemoji の矢印(青い四角)になると UI が崩れる。
+- **国旗は別ファイルが必須** — Windows は国旗絵文字のグリフを持たず `🇯🇵` が「JP」と
+  文字で出る。`TwemojiCountryFlags.woff2` が GSUB リガチャで旗 1 グリフに変換する。
+- テーマ切替アイコンは **SVG**(`Nav.tsx` の `THEME_GLYPH`)。`☀`(U+2600) は天気の
+  「快晴 ☀️」と同一符号位置なので、絵文字のままだと片方だけ Twemoji になって不揃いになる。
+
+```bash
+# 更新するとき
+curl -sL -o public/fonts/twemoji.woff2 \
+  https://github.com/TCOTC/twemoji-colr/releases/download/v17.0.3/twemoji-colr.woff2
+# 国旗: npm の country-flag-emoji-polyfill から TwemojiCountryFlags.woff2 を取り出す
+```

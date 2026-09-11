@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { NAV, PROFILE } from "@/lib/profile";
@@ -12,7 +13,45 @@ const THEME_LABEL: Record<ThemeName, TKey> = {
   darkblue: "theme.darkblue",
   black: "theme.black",
 };
-const THEME_ICON: Record<ThemeName, string> = { light: "☀", darkblue: "◐", black: "●" };
+/* テーマのアイコンは絵文字ではなく SVG。
+   ⚠️ "☀"(U+2600) は天気の「快晴 ☀️」と同じ符号位置なので、
+      Twemoji を当てると片方だけ絵になる。SVG なら天気側だけが絵文字のまま揃う。 */
+const THEME_GLYPH: Record<ThemeName, ReactNode> = {
+  // 太陽
+  light: (
+    <>
+      <circle cx="8" cy="8" r="3.1" />
+      <path d="M8 1.1v1.7M8 13.2v1.7M1.1 8h1.7M13.2 8h1.7M3.12 3.12l1.2 1.2M11.68 11.68l1.2 1.2M12.88 3.12l-1.2 1.2M4.32 11.68l-1.2 1.2" />
+    </>
+  ),
+  // 半分だけ塗られた円
+  darkblue: (
+    <>
+      <circle cx="8" cy="8" r="5.3" />
+      <path d="M8 2.7a5.3 5.3 0 0 1 0 10.6z" fill="currentColor" stroke="none" />
+    </>
+  ),
+  // 塗りつぶした円
+  black: <circle cx="8" cy="8" r="5.3" fill="currentColor" stroke="none" />,
+};
+
+function ThemeGlyph({ theme, size = 15 }: { theme: ThemeName; size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.35"
+      strokeLinecap="round"
+      aria-hidden
+      className="shrink-0"
+    >
+      {THEME_GLYPH[theme]}
+    </svg>
+  );
+}
 
 export function Nav() {
   const pathname = usePathname();
@@ -89,7 +128,7 @@ export function Nav() {
               className="flex h-9 items-center gap-1.5 rounded-lg border border-line px-2.5 text-xs text-sub transition hover:border-accent hover:text-fg"
               aria-label={t("nav.theme")}
             >
-              <span className="text-[13px]">{THEME_ICON[theme]}</span>
+              <ThemeGlyph theme={theme} />
               <span className="hidden sm:inline">{t(THEME_LABEL[theme])}</span>
             </button>
             {menu === "theme" ? (
@@ -106,7 +145,7 @@ export function Nav() {
                       th === theme ? "text-accent" : "text-sub"
                     }`}
                   >
-                    <span>{THEME_ICON[th]}</span>
+                    <ThemeGlyph theme={th} />
                     {t(THEME_LABEL[th])}
                   </button>
                 ))}

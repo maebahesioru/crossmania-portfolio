@@ -142,6 +142,29 @@ X は**新規投稿の自動検知をやめた**(手動運用)。理由と、や
 - **件数を固定値でテストしない**。記事は自動で増えるので、テストは `/api/blog` の `counts` を基準にする(固定値22で書いていたため 29 になった瞬間に3件壊れた)。
 - 見出しの件数も**ライブ値**にする(`BlogCount`)。`BLOG.length` を焼き込むと「見出し22 / 一覧29」とズレる。
 
+## BBS のロボット確認 (HIKAPTCHA)
+
+BBS への投稿には [HIKAPTCHA](https://hikaptcha.hikamers.app/docs)(hikabooru の実在画像を使う
+画像認証)を必須にしている。
+
+- ウィジェット: `src/components/Hikaptcha.tsx` が配布スクリプト `captcha.js` を読み込んで描画する。
+  描画は Shadow DOM の中で完結するのでこちらの CSS と干渉しない。
+- サーバー側: `/api/bbs` の POST が `HIKAPTCHA_URL/api/consume` に `{token, ticket}` を投げ、
+  **成功したときだけ**投稿を受け付ける。
+
+### 落とし穴(実測)
+
+- **クライアントの onSolved を信用しない。** ウィジェットが「解けた」と言うだけでは認証は成立しない。
+  サーバーが consume に成功した時点で初めて人間とみなす(トークンは5分で失効・ワンタイム)。
+  省略すると curl 一発で突破される。
+- **`captcha.js` は mount 要素に `attachShadow()` する。** 同じ要素に2回 `render()` すると
+  「shadow root が既にある」で例外になるので、**リセットは要素ごと作り直す**
+  (トークンがワンタイムなので投稿のたびに作り直しが必要)。
+- **検証用に shadowRoot を探すときは host 自身ではなく `host.firstElementChild` を見る**
+  (shadow は mount の子に張られる。`host.shadowRoot` は undefined)。
+- 認証サーバーに繋がらないときは**フェイルクローズ**(投稿を受け付けない)。
+- サイトの `word-break: auto-phrase` は widget に漏れない(`:host { all: initial }` が遮断する)。
+
 ## デプロイ (hikamers.app)
 
 Coolify(VM100 / 192.168.1.73)の **Application id=19 / uuid=`qpwngujsq48pczt7zj47ane3`** が

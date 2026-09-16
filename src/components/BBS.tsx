@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useI18n } from "@/lib/i18n";
+import { Hikaptcha, type CaptchaAnswer } from "./Hikaptcha";
 import { Reveal, SectionHeading } from "./ui";
 
 type Post = { id: string; name: string; body: string; at: string; parentId: string | null };
@@ -23,6 +24,10 @@ export function BBS({ headingIndex = "10", standalone = false }: { headingIndex?
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
   const [keyOf, setKeyOf] = useState<Record<string, string>>({});
+  /** HIKAPTCHA の解答。token/ticket はサーバーで消費するまで未検証 */
+  const [captcha, setCaptcha] = useState<CaptchaAnswer>(null);
+  /** トークンはワンタイムなので、投稿のたびにウィジェットを作り直す */
+  const [captchaKey, setCaptchaKey] = useState(0);
 
   const load = useCallback(async () => {
     try {
@@ -57,13 +62,24 @@ export function BBS({ headingIndex = "10", standalone = false }: { headingIndex?
       setMsg({ kind: "err", text: locale === "ja" ? "本文を入力してください" : "Please write a message" });
       return;
     }
+    if (!captcha) {
+      setMsg({ kind: "err", text: t("bbs.captchaNeeded") });
+      return;
+    }
     setBusy(true);
     setMsg(null);
     try {
       const r = await fetch("/api/bbs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, body, delKey, parentId: replyTo?.id ?? null }),
+        body: JSON.stringify({
+          name,
+          body,
+          delKey,
+          parentId: replyTo?.id ?? null,
+          captchaToken: captcha.token,
+          captchaTicket: captcha.ticket,
+        }),
       });
       const j = await r.json();
       if (!r.ok) throw new Error(j.error || t("error"));
@@ -78,6 +94,9 @@ export function BBS({ headingIndex = "10", standalone = false }: { headingIndex?
       }
       setBody("");
       setReplyTo(null);
+      // 消費済みトークンは使えないので、次の投稿用に新しい出題を出させる
+      setCaptcha(null);
+      setCaptchaKey((k) => k + 1);
       setMsg({ kind: "ok", text: t("bbs.thanks") });
       await load();
     } catch (err) {
@@ -183,6 +202,11 @@ export function BBS({ headingIndex = "10", standalone = false }: { headingIndex?
               placeholder={t("bbs.delKeyPlaceholder")}
               maxLength={16}
               aria-label={t("bbs.delKey")}
+            />
+            <Hikaptcha
+              onSolved={setCaptcha}
+              resetKey={captchaKey}
+              label={t("bbs.captcha")}
             />
             <button
               type="submit"

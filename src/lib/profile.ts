@@ -402,6 +402,7 @@ export const NAV = [
   { href: "/", key: "nav.home" },
   { href: "/blog", key: "nav.blog" },
   { href: "/bbs", key: "nav.bbs" },
+  { href: "/donate", key: "nav.donate" },
   { href: "/mirror", key: "nav.mirror" },
   { href: "/terms", key: "nav.terms" },
   { href: "/license", key: "nav.license" },

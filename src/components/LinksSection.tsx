@@ -1,18 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { CONTACTS, DONATIONS, type IconName } from "@/lib/profile";
+import Link from "next/link";
+import { CONTACTS, type IconName } from "@/lib/profile";
 import { useI18n } from "@/lib/i18n";
 import { SITE_URL } from "@/lib/site";
 import { relativeTime, useXAccounts } from "./useXAccounts";
-import { CopyAddress, CopyButton, middleTruncate, Reveal, SectionHeading } from "./ui";
+import { CopyButton, middleTruncate, Reveal, SectionHeading } from "./ui";
+import { DonateList } from "./Donate";
 import {
-  BitcoinIcon,
   BlueskyIcon,
   GithubIcon,
   InstagramIcon,
-  LitecoinIcon,
-  MoneroIcon,
   NiconicoIcon,
   QiitaIcon,
   RedditIcon,
@@ -40,16 +39,6 @@ function NorthIcon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
-function OfuseIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden {...props}>
-      <rect x="2.5" y="5" width="19" height="14" rx="2.5" />
-      <path d="M2.5 10h19" />
-      <path d="M6 15h5" />
-    </svg>
-  );
-}
-
 const ICONS: Record<IconName, (p: React.SVGProps<SVGSVGElement>) => React.ReactElement> = {
   x: XIcon,
   bluesky: BlueskyIcon,
@@ -295,44 +284,17 @@ export function LinksSection() {
         <SectionHeading index="09" title={t("sec.donate")} sub={locale === "ja" ? "投げ銭はすべてサーバー代になります" : "every tip goes to server costs"} id="donate" />
       </Reveal>
 
-      <div id="donate-list" className="mt-6 grid grid-cols-1 gap-3 lg:grid-cols-2">
-        {DONATIONS.map((d, i) => {
-          const Icon =
-            d.icon === "monero" ? MoneroIcon : d.icon === "bitcoin" ? BitcoinIcon : d.icon === "litecoin" ? LitecoinIcon : OfuseIcon;
-          const color = d.icon === "monero" ? "#ff6600" : d.icon === "bitcoin" ? "#f7931a" : d.icon === "litecoin" ? "#a6a9aa" : "#ff2d55";
-          return (
-            <Reveal key={d.label} delay={i * 60}>
-              <div className="panel p-4">
-                <div className="flex items-center gap-3">
-                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-line bg-panel2" style={{ color }}>
-                    <Icon className="h-4 w-4" />
-                  </span>
-                  <span className="text-[13.5px] font-bold">{d.label}</span>
-                  {d.recommended ? (
-                    <span className="ml-auto rounded-full bg-accent px-2 py-0.5 text-[11.5px] font-bold text-white">
-                      ⭐ {locale === "ja" ? "推奨" : "recommended"}
-                    </span>
-                  ) : null}
-                </div>
-                <div className="mt-3">
-                  {d.address ? (
-                    <CopyAddress value={d.address} />
-                  ) : (
-                    <a href={d.url} target="_blank" rel="noopener noreferrer" className="link font-mono text-[12px]">
-                      {d.url} ↗
-                    </a>
-                  )}
-                </div>
-              </div>
-            </Reveal>
-          );
-        })}
+      {/* ⚠️ 送金先の描画は Donate.tsx の DonateList に一本化する。
+          ここに書き写すと、アドレスを足したときにホームと /donate で食い違う。 */}
+      <div id="donate-list" className="mt-6">
+        <DonateList />
       </div>
-      <p className="mt-3 text-[11.5px] text-sub">
-        {locale === "ja"
-          ? "送金用アドレスは全文を載せています。コピーしてお使いください。"
-          : "Donation addresses are shown in full — use the copy button."}
-      </p>
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+        <p className="text-[11.5px] text-sub">{t("donate.copyNote")}</p>
+        <Link href="/donate" className="link shrink-0 text-[12px]">
+          {t("nav.donate")} →
+        </Link>
+      </div>
     </section>
   );
 }

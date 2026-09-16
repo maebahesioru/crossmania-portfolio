@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { HIKAPTCHA_URL } from "@/lib/site";
 import { clientIp, hashId, readJson, withLock, writeJson } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
@@ -24,6 +25,31 @@ function publicPost(p: BbsPost) {
   return { id: p.id, name: p.name, body: p.body, at: p.at, parentId: p.parentId };
 }
 
+/**
+ * HIKAPTCHA のトークンを消費する。
+ *
+ * ⚠️ ウィジェットが onSolved を呼んだだけでは認証は成立しない。**サーバー側で
+ *    /api/consume が成功した時点**で初めて人間とみなす(トークンは5分で失効・ワンタイム)。
+ *    クライアントの表示を信用して投稿を通すと、curl 一発で突破される。
+ */
+async function consumeCaptcha(token: string, ticket: string): Promise<boolean> {
+  if (!token || !ticket) return false;
+  try {
+    const r = await fetch(`${HIKAPTCHA_URL}/api/consume`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token, ticket }),
+      cache: "no-store",
+      signal: AbortSignal.timeout(10_000),
+    });
+    const j = (await r.json()) as { ok?: boolean };
+    return Boolean(j?.ok);
+  } catch {
+    // 認証サーバーが落ちている間は投稿を受け付けない(フェイルクローズ)
+    return false;
+  }
+}
+
 function sanitize(s: string): string {
   return s.replace(/\r\n/g, "\n").trim();
 }
@@ -37,7 +63,14 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  let payload: { name?: string; body?: string; delKey?: string; parentId?: string | null };
+  let payload: {
+    name?: string;
+    body?: string;
+    delKey?: string;
+    parentId?: string | null;
+    captchaToken?: string;
+    captchaTicket?: string;
+  };
   try {
     payload = await req.json();
   } catch {
@@ -53,6 +86,13 @@ export async function POST(req: Request) {
   if (body.length > 1500) return NextResponse.json({ error: "本文は1500文字までです" }, { status: 400 });
   if (delKey && (delKey.length < 4 || delKey.length > 16)) {
     return NextResponse.json({ error: "削除キーは4〜16文字にしてください" }, { status: 400 });
+  }
+
+  // ロボット確認(未通過ならここで弾く)
+  const captchaToken = String(payload.captchaToken ?? "");
+  const captchaTicket = String(payload.captchaTicket ?? "");
+  if (!(await consumeCaptcha(captchaToken, captchaTicket))) {
+    return NextResponse.json({ error: "ロボット確認に失敗しました。もう一度お試しください。" }, { status: 400 });
   }
 
   const ipHash = hashId(clientIp(req));

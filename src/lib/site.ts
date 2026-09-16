@@ -10,6 +10,16 @@ export const SITE_URL = process.env.SITE_URL || "https://hikamers.app";
  */
 export const ONION_URL = (process.env.NEXT_PUBLIC_ONION_URL || "").trim();
 
+/**
+ * HIKAPTCHA(画像認証)のサーバー。BBS 投稿のロボット確認に使う。
+ *
+ * 公開サーバーは複数サイトで共用できる。セルフホストに切り替える場合は
+ * `NEXT_PUBLIC_HIKAPTCHA_URL` を差し替える(⚠️ クライアントでも使うので NEXT_PUBLIC_ が必須)。
+ */
+export const HIKAPTCHA_URL = (
+  process.env.NEXT_PUBLIC_HIKAPTCHA_URL || "https://hikaptcha.hikamers.app"
+).replace(/\/+$/, "");
+
 export const SITE = {
   url: SITE_URL,
   name: "十字架_mania",

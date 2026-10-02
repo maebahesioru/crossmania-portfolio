@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { X_ACCOUNTS } from "@/lib/profile";
+import { signedFetch } from "@/lib/webbotauth";
 
 export const dynamic = "force-dynamic";
 
@@ -34,7 +35,7 @@ function bigAvatar(url: string | undefined): string | undefined {
 
 async function fetchOne(handle: string): Promise<XAccount> {
   try {
-    const res = await fetch(`https://api.fxtwitter.com/${encodeURIComponent(handle)}`, {
+    const res = await signedFetch(`https://api.fxtwitter.com/${encodeURIComponent(handle)}`, {
       headers: { "User-Agent": UA, Accept: "application/json" },
       cache: "no-store",
     });

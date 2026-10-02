@@ -17,6 +17,7 @@
 
 import { readJson, writeJson } from "./store";
 import { BLOG, SOURCE_ORDER, type BlogPost, type SourceKey } from "./profile";
+import { signedFetch } from "@/lib/webbotauth";
 
 const UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
@@ -55,7 +56,7 @@ const CACHE_FILE = "blog-cache.json";
 /* ------------------------------------------------------------------ helpers */
 
 async function http(url: string, ms = 9000): Promise<string> {
-  const res = await fetch(url, {
+  const res = await signedFetch(url, {
     headers: { "User-Agent": UA, Accept: "*/*" },
     cache: "no-store",
     signal: AbortSignal.timeout(ms),

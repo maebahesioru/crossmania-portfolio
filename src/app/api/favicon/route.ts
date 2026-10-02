@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { signedFetch } from "@/lib/webbotauth";
 
 /**
  * リンク先サイトの favicon / 拡張機能アイコンを自動取得して中継する。
@@ -269,7 +270,7 @@ export async function GET(request: Request) {
 
   try {
     // 1) 対象ページの HTML から icon / og:image 候補を拾う
-    const pageRes = await fetch(pageUrl, {
+    const pageRes = await signedFetch(pageUrl, {
       headers: { "user-agent": UA, accept: "text/html,*/*" },
       signal: AbortSignal.timeout(9000),
       cache: "no-store",
@@ -303,7 +304,7 @@ export async function GET(request: Request) {
 
     for (const url of tries) {
       try {
-        const r = await fetch(url, {
+        const r = await signedFetch(url, {
           headers: { "user-agent": UA },
           signal: AbortSignal.timeout(8000),
           cache: "no-store",

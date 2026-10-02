@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { GITHUB_USER } from "@/lib/site";
+import { signedFetch } from "@/lib/webbotauth";
 
 export const dynamic = "force-dynamic";
 
@@ -38,8 +39,8 @@ export async function GET() {
 
   try {
     const [uRes, eRes] = await Promise.all([
-      fetch(`https://api.github.com/users/${GITHUB_USER}`, { headers, cache: "no-store" }),
-      fetch(`https://api.github.com/users/${GITHUB_USER}/events/public?per_page=30`, { headers, cache: "no-store" }),
+      signedFetch(`https://api.github.com/users/${GITHUB_USER}`, { headers, cache: "no-store" }),
+      signedFetch(`https://api.github.com/users/${GITHUB_USER}/events/public?per_page=30`, { headers, cache: "no-store" }),
     ]);
     if (!uRes.ok) throw new Error(`user ${uRes.status}`);
     const u = (await uRes.json()) as {

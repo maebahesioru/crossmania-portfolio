@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { WEATHER_SPOT } from "@/lib/site";
+import { signedFetch } from "@/lib/webbotauth";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +28,7 @@ export async function GET() {
     `&timezone=Asia%2FTokyo&forecast_days=3`;
 
   try {
-    const res = await fetch(url, { cache: "no-store", headers: { "User-Agent": "crossmania-portfolio/1.0" } });
+    const res = await signedFetch(url, { cache: "no-store", headers: { "User-Agent": "crossmania-portfolio/1.0" } });
     if (!res.ok) throw new Error(`upstream ${res.status}`);
     const j = (await res.json()) as {
       current: { time: string; temperature_2m: number; apparent_temperature: number; weather_code: number; is_day: number; wind_speed_10m: number };

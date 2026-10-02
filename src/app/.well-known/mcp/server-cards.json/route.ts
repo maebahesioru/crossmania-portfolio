@@ -3,8 +3,8 @@ import { mcpServerCard } from "@/lib/agentApi";
 export const dynamic = "force-static";
 
 /**
- * MCP Server Card (SEP-1649)。仕様どおりの標準パス。
- * カードの中身は agentApi 側で1つだけ定義し、別名パスと共有する。
+ * MCP Server Card の別名パス。
+ * 標準は `server-card.json` だが、`server-cards.json` を探すクライアントがいるので同じ実体を返す。
  */
 export async function GET() {
   return Response.json(mcpServerCard(), {

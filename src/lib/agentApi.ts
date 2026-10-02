@@ -90,6 +90,26 @@ export async function answer(question: string): Promise<string> {
   ].join("\n");
 }
 
+/**
+ * MCP Server Card (SEP-1649)。
+ * 仕様のパスは `server-card.json` だが、クライアントによっては
+ * `server-cards.json` / `mcp.json` を探すので、同じ実体を3パスで返す。
+ * どれも「実際に動いている /mcp」を指す。
+ */
+export function mcpServerCard() {
+  return {
+    serverInfo: { name: "hikamers.app", version: "1.0.0" },
+    transport: { type: "streamable-http", endpoint: `${SITE.url}/mcp` },
+    capabilities: {
+      tools: { listChanged: false },
+      resources: { listChanged: false, subscribe: false },
+      prompts: { listChanged: false },
+    },
+    instructions:
+      "十字架_mania のポートフォリオ(hikamers.app)の読み取り専用サーバー。書き込みはできない。",
+  };
+}
+
 export const MCP_TOOLS = [
   { name: "get_profile", description: "十字架_mania のプロフィール(自己紹介・スキル・肩書き)を返す", keys: ["profile"] },
   { name: "list_projects", description: "公開しているプロジェクトの一覧を返す", keys: ["projects"] },

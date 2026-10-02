@@ -117,6 +117,30 @@ export function authMd(): string {
 ウィジェットで解いた \`token\` と \`ticket\` を \`POST /api/bbs\` の本文に含めます。
 これは「人間かどうか」の確認であり、エージェントの識別・認可ではありません。
 
+## agent_auth
+
+機械可読な登録情報。このサイトは認可サーバーを持たないため、方式は \`anonymous\` のみ。
+
+\`\`\`json
+{
+  "agent_auth": {
+    "skill": "https://hikamers.app/.well-known/agent-skills/hikamers-portfolio/SKILL.md",
+    "register_uri": "https://hikamers.app/auth.md",
+    "methods": [
+      {
+        "type": "anonymous",
+        "description": "登録不要。認証ヘッダなしで公開APIを呼べる。",
+        "provisioning_uri": "https://hikamers.app/api/",
+        "credential_types_supported": []
+      }
+    ],
+    "identity_types_supported": ["anonymous"],
+    "claim_uri": "https://hikamers.app/auth.md",
+    "revocation_uri": null
+  }
+}
+\`\`\`
+
 ## Credentials
 
 発行している認証情報はありません。したがって:

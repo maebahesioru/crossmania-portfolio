@@ -16,7 +16,7 @@ export async function GET() {
     "Allow: /",
     "Disallow: /api/",
     "",
-    "Content-Signal: ai-train=no, search=yes, ai-input=yes",
+    "Content-Signal: ai-train=yes, search=yes, ai-input=yes",
     "",
     // ARD(Agentic Resource Discovery)の在り処を示す
     `Agentmap: ${SITE.url}/.well-known/ai-catalog.json`,

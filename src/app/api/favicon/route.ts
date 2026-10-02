@@ -112,6 +112,9 @@ function collectCandidates(html: string, base: string) {
     const tag = m[0];
     const rel = (tag.match(/\brel\s*=\s*["']([^"']+)["']/i) || [])[1] || "";
     if (!/icon/i.test(rel)) continue;
+    // ⚠️ mask-icon は Safari のピン留めタブ用で**単色**。そのまま表示すると色が消えるので除く。
+    //    (/icon/i は "mask-icon" にも当たってしまう)
+    if (/mask-icon/i.test(rel)) continue;
     const href = (tag.match(/\bhref\s*=\s*["']([^"']+)["']/i) || [])[1];
     if (!href) continue;
     let url: string;
@@ -124,7 +127,15 @@ function collectCandidates(html: string, base: string) {
     const sizes = (tag.match(/\bsizes\s*=\s*["']([^"']+)["']/i) || [])[1] || "";
     let score = 0;
     if (/apple-touch-icon/i.test(rel)) score += 5; // 高解像度で綺麗
-    if (/\bsvg\b/i.test(sizes) || /\.svg(\?|$)/i.test(url)) score += 6; // ベクターは拡大に強い
+    /**
+     * ⚠️ SVG は最優先にする。加点6だと「256x256 の .ico」に負ける。
+     *    実測: hikamer8values は `/favicon.ico`(Next.js のデフォルト=黒丸に白三角)と
+     *    `/icon.svg`(本物の「8」ロゴ)の両方を配信していて、ico が選ばれてバニラに見えていた。
+     *    (ico は sizes="256x256" で 0+8-1=7点、svg は sizes="any" で 6点だった)
+     *    SVG を置いているサイトは「それをアイコンとして使ってほしい」ので、
+     *    apple-touch-icon(5) + 256px(8) = 13 を上回る 16 点にする。
+     */
+    if (/\bsvg\b/i.test(sizes) || /\.svg(\?|$)/i.test(url)) score += 16;
     const px = Number((sizes.match(/(\d+)x\d+/) || [])[1] || 0);
     if (px) score += Math.min(px, 256) / 32;
     if (/\.ico(\?|$)/i.test(url)) score -= 1;

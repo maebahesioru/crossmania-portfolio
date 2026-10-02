@@ -186,6 +186,24 @@ export const PROJECTS: Project[] = [
     },
     tag: { ja: "ゲーム", en: "Game" },
   },
+  {
+    name: "ツイッタラー世論調査",
+    url: "https://tsuittara-yoron.hikamers.app/",
+    desc: {
+      ja: "Xのユーザーを誰でも匿名で「好き嫌い」と8項目評価できるサイトです！@IDで検索すると未登録のユーザーもその場で追加できます。",
+      en: "An anonymous site for rating X users — like/dislike plus an 8-item score. Search by @handle and unregistered accounts get added on the spot.",
+    },
+    tag: { ja: "世論調査", en: "Poll" },
+  },
+  {
+    name: "ヒカマーズ8values",
+    url: "https://hikamer8values.hikamers.app/",
+    desc: {
+      ja: "全70問・9つの軸であなたのヒカマニ思想を診断します！全52タイプ。元ネタは界隈で話題の「ヒカマーズグラフ」「ヒカマニ思想マップ」。",
+      en: "A 70-question, 9-axis quiz that maps your Hikamani ideology across 52 possible types.",
+    },
+    tag: { ja: "診断", en: "Quiz" },
+  },
 ];
 
 export type AppTool = {

@@ -103,6 +103,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {THEME_INIT_SCRIPT}
         </Script>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }} />
+        {/* ARD(Agentic Resource Discovery)の能力マニフェストへの導線。
+            React が head に巻き上げる。robots.txt の Agentmap と同じものを指す。 */}
+        <link rel="ai-catalog" href="/.well-known/ai-catalog.json" />
 
         <div className="bg-field" aria-hidden>
           <div className="aurora aurora-a" />

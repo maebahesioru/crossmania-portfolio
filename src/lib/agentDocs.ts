@@ -88,20 +88,34 @@ export function authMd(): string {
 
 ## Registration
 
-**登録はありません。** アカウント・APIキー・OAuthクライアントの払い出しは行っていません。
+**方式: \`anonymous\`(登録不要)。** アカウント発行も API キー配布も行っていません。
+エージェントは登録・プロビジョニングの手順を踏まずに、そのまま利用を開始できます。
 
-## Supported methods
-
-| 操作 | 方法 |
+| 項目 | 値 |
 |---|---|
-| ページの閲覧 | 認証なし。\`Accept: text/markdown\` を付けると Markdown で返します |
-| 公開APIの読み取り (GET) | 認証なし |
-| BBSへの書き込み (POST) | 認証の代わりに **HIKAPTCHA**(画像によるロボット確認)が必要 |
+| registration method | \`anonymous\` |
+| register_uri | \`https://hikamers.app/auth.md\`(この文書。**登録という手続きが存在しない**ことを示す) |
+| provisioning endpoint | 不要(\`https://hikamers.app/api/\` を直接呼ぶだけ) |
+| credential types | なし |
+| claim_uri | \`https://hikamers.app/auth.md\` |
 
-- HIKAPTCHA: \`https://hikaptcha.hikamers.app\` のウィジェットで解いた \`token\` と \`ticket\` を
-  \`POST /api/bbs\` の本文に含めます。サーバー側が \`/api/consume\` で検証します。
-  これは「人間かどうか」の確認であり、エージェントの識別・認可ではありません。
-- 書き込み系は BBS のみです。それ以外のエンドポイントは読み取り専用です。
+利用開始の手順:
+
+1. 何もせず \`GET https://hikamers.app/api/blog\` などを呼ぶ(認証ヘッダは不要)
+2. 書き込みたい場合のみ、投稿ごとに HIKAPTCHA を解く(下記)
+
+## Write access (BBS のみ)
+
+| 項目 | 値 |
+|---|---|
+| endpoint | \`POST https://hikamers.app/api/bbs\` |
+| method | \`hikaptcha\`(画像によるロボット確認。アカウントではない) |
+| challenge | \`GET https://hikaptcha.hikamers.app/api/challenge\` |
+| verify | \`POST https://hikaptcha.hikamers.app/api/verify\` |
+| consume | \`POST https://hikaptcha.hikamers.app/api/consume\`(サイト側が検証) |
+
+ウィジェットで解いた \`token\` と \`ticket\` を \`POST /api/bbs\` の本文に含めます。
+これは「人間かどうか」の確認であり、エージェントの識別・認可ではありません。
 
 ## Credentials
 

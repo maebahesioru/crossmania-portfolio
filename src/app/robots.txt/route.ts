@@ -18,6 +18,9 @@ export async function GET() {
     "",
     "Content-Signal: ai-train=no, search=yes, ai-input=yes",
     "",
+    // ARD(Agentic Resource Discovery)の在り処を示す
+    `Agentmap: ${SITE.url}/.well-known/ai-catalog.json`,
+    "",
     `Host: ${SITE.url}`,
     `Sitemap: ${SITE.url}/sitemap.xml`,
     "",

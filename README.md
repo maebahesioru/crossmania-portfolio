@@ -167,25 +167,29 @@ BBS への投稿には [HIKAPTCHA](https://hikaptcha.hikamers.app/docs)(hikaboor
 
 ## デプロイ (hikamers.app)
 
-Coolify(self-hosted / <LAN-IP>)の **Application id=19 / uuid=`<APP-UUID>`** が
-`hikamers.app` を配信している。Traefik のルーターは custom_labels に入っている。
+`hikamers.app` は自宅 LAN 上のセルフホスト Coolify で配信している。
+アプリはこのリポジトリと連携していて、push 後に Coolify の API から再デプロイできる。
+
+> **内部識別子はここに書かない。** このリポジトリは公開なので、LAN の IP・ホスト名・
+> Coolify のアプリ UUID はコードにも README にも残さない。値が要るときは Coolify の
+> 管理画面か、ローカルの `.verify/coolify.py` から取る(トークンはリポジトリの外)。
 
 | 項目 | 値 |
 |---|---|
 | リポジトリ | `maebahesioru/crossmania-portfolio` (branch `master`) |
 | ビルド | `dockerfile` / `/Dockerfile` |
 | ポート | 3000 |
-| 永続ボリューム | `<APP-UUID>_portfolio-data` → `/app/data` |
+| 永続ボリューム | `<APP_UUID>_portfolio-data` → `/app/data` |
 
 ```bash
-# デプロイ(force=true で作り直す)
+# デプロイ(force=true で作り直す)。APP_UUID は Coolify の画面から取る
 curl -X POST -H "Authorization: Bearer $COOLIFY_TOKEN" \
-  "https://coolify.hikamers.app/api/v1/deploy?uuid=<APP-UUID>&force=true"
+  "https://coolify.hikamers.app/api/v1/deploy?uuid=$APP_UUID&force=true"
 ```
 
 - **`/app/data` の永続ボリュームは必須**。無いとコンテナ再作成のたびに訪問者カウンター・BBS・
   blogキャッシュが消える。Coolify の API ではストレージを追加できないので DB に直接 INSERT する
-  (`local_persistent_volumes` / `resource_type='App\Models\Application'` / `resource_id=19`)。
+  (`local_persistent_volumes` / `resource_type='App\Models\Application'` / `resource_id=<APP_ID>`)。
 - POST/PATCH/DELETE は Cloudflare WAF が plain curl を 403 code 1010 で弾く。
   `curl_cffi` の `impersonate="chrome124"` が必須。
 
@@ -194,7 +198,7 @@ curl -X POST -H "Authorization: Bearer $COOLIFY_TOKEN" \
 **アドレス**: 環境変数 `NEXT_PUBLIC_ONION_URL` で渡す(ハードコードしない)。
 隠しサービスのアドレスは鍵から決まるので、実体を作るまで確定しない。未設定なら `/mirror` は「準備中」。
 
-構成は `onion/`(Dockerfile + torrc)。self-hosted 上で単体コンテナとして動かしている:
+構成は `onion/`(Dockerfile + torrc)。自宅サーバー上で単体コンテナとして動かしている:
 
 ```bash
 cd /data/hikamers-onion && git pull
@@ -207,7 +211,7 @@ docker exec hikamers-onion cat /var/lib/tor/hidden_service/hostname   # .onion �
 
 ### なぜ Traefik 経由なのか
 
-**アプリのコンテナ名はデプロイのたびに変わる**(`<APP-UUID>-<毎回違う数字>`)。
+**アプリのコンテナ名はデプロイのたびに変わる**(`<APP_UUID>-<毎回違う数字>`)。
 `--network-alias` も試したが **Coolify 4.1.2 では効かなかった**(アプリのエイリアスは
 コンテナ名だけのまま)。→ tor の転送先を安定した `coolify-proxy:80` にし、
 **Traefik 側に `Host(\`<onion>.onion\`)` のルーターを足して受ける**。
@@ -215,7 +219,7 @@ docker exec hikamers-onion cat /var/lib/tor/hidden_service/hostname   # .onion �
 ```
 traefik.http.routers.onion.entryPoints=http
 traefik.http.routers.onion.rule=Host(`<onion>.onion`) && PathPrefix(`/`)
-traefik.http.routers.onion.service=http-0-<APP-UUID>
+traefik.http.routers.onion.service=http-0-<APP_UUID>
 ```
 
 - 鍵は `hikamers-onion-data` ボリュームに永続化。**消すと .onion アドレスが変わる**ので消さない。
@@ -223,7 +227,7 @@ traefik.http.routers.onion.service=http-0-<APP-UUID>
   デスクリプタが公開されなくなり、外部から `.onion` が引けなくなった(LAN 内の tor から
   SOCKS で叩くと `general SOCKS server failure`)。**コンテナは `Up` のままなので気づけない。**
   → `docker restart hikamers-onion` で復旧する(鍵はボリュームなのでアドレスは変わらない)。
-  再発防止に self-hosted の systemd timer で毎日 04:30 に再起動している:
+  再発防止に自宅サーバーの systemd timer で毎日 04:30 に再起動している:
   `hikamers-onion-restart.timer` / `.service`(`systemctl list-timers` で次回確認)。
 - tor は宛先を接続時に解決するので、アプリが後から起動しても問題ない。
 - 疎通確認: `docker run --rm --network coolify curlimages/curl:latest \

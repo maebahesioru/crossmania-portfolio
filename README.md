@@ -223,6 +223,46 @@ curl -X POST -H "Content-Type: application/json" https://hikamers.app/a2a \
 - streaming / pushNotifications は未実装。カードで `false` と明示している
 - タスクは保持しない(`tasks/get` は 404)
 
+### Web Bot Auth (外向きリクエストの署名)
+
+このサイトが**外にリクエストを送るとき**に「これは hikamers.app のものだ」と
+暗号署名で証明する。サイトを守る仕組みではなく、**送信側の名乗り**。
+
+| 項目 | 値 |
+|---|---|
+| 鍵ディレクトリ | `/.well-known/http-message-signatures-directory` (JWKS) |
+| 署名するリクエスト | github / weather / fxtwitter / ブログ取得 / favicon中継 |
+| 付けるヘッダ | `Signature-Agent` / `Signature-Input` / `Signature` |
+| 実装 | `src/lib/webbotauth.ts`(Cloudflare の参照実装を使用) |
+
+- **秘密鍵は Coolify の env `WEBBOTAUTH_PRIVATE_JWK` のみ。リポジトリには置かない。**
+- 鍵が未設定なら署名せず、ディレクトリも **404** を返す(無いのに「ある」と言わない)。
+- 署名に失敗しても**元の fetch は必ず実行する**(署名は付加価値であって通信を落とさない)。
+- 鍵の生成と投入:
+
+```bash
+node -e 'const{generateKeyPairSync,createHash}=require("crypto");
+const{publicKey,privateKey}=generateKeyPairSync("ed25519");
+const pub=publicKey.export({format:"jwk"}),priv=privateKey.export({format:"jwk"});
+const t=createHash("sha256").update(JSON.stringify({crv:pub.crv,kty:pub.kty,x:pub.x})).digest("base64url");
+console.log("thumbprint:",t);console.log(JSON.stringify(priv))'
+# 出た JWK を Coolify の WEBBOTAUTH_PRIVATE_JWK に入れる(画面 or API)
+```
+
+#### 落とし穴(実測)
+
+- **`Signature-Agent` は二重引用符で囲む。** 構造化フィールドなので、囲まない・
+  辞書形式(`sig2="..."`)にすると Cloudflare は検証に失敗する。
+- **`signature-agent` を署名対象のコンポーネントに入れないと検証が通らない。**
+- **`@authority` は Host ヘッダから取る。** `SITE_URL` を固定で使うと、別ドメイン
+  (ローカル検証や onion ミラー)から来た要求と食い違って検証が落ちる。
+- **署名対象は `@authority` と `signature-agent` の2つで、パスは含まれない。**
+  パスを変えても検証は通る(仕様どおり)。改ざん検知のテストを書くときは
+  署名対象のほうを書き換えること。
+- **ディレクトリ応答にも署名が要る。** タグは `web-bot-auth` ではなく
+  `http-message-signatures-directory`、コンポーネントは `@authority` に `;req`。
+  これが無いと他人が同じ内容をミラーして成りすませる。
+
 ### 落とし穴(すべて実測)
 
 - **`NextResponse.rewrite()` はクエリ文字列を落とす。** ミドルウェアで `?path=/blog` を付けても

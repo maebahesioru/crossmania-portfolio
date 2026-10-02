@@ -219,6 +219,12 @@ traefik.http.routers.onion.service=http-0-<APP-UUID>
 ```
 
 - 鍵は `hikamers-onion-data` ボリュームに永続化。**消すと .onion アドレスが変わる**ので消さない。
+- ⚠️ **Tor の隠しサービスは長時間動かすと死ぬ。** 実測: 46時間で circuit が死に続けて
+  デスクリプタが公開されなくなり、外部から `.onion` が引けなくなった(LAN 内の tor から
+  SOCKS で叩くと `general SOCKS server failure`)。**コンテナは `Up` のままなので気づけない。**
+  → `docker restart hikamers-onion` で復旧する(鍵はボリュームなのでアドレスは変わらない)。
+  再発防止に self-hosted の systemd timer で毎日 04:30 に再起動している:
+  `hikamers-onion-restart.timer` / `.service`(`systemctl list-timers` で次回確認)。
 - tor は宛先を接続時に解決するので、アプリが後から起動しても問題ない。
 - 疎通確認: `docker run --rm --network coolify curlimages/curl:latest \
   --socks5-hostname <torproxy> :9050 http://<onion>.onion/`

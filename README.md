@@ -165,6 +165,78 @@ BBS への投稿には [HIKAPTCHA](https://hikaptcha.hikamers.app/docs)(hikaboor
 - 認証サーバーに繋がらないときは**フェイルクローズ**(投稿を受け付けない)。
 - サイトの `word-break: auto-phrase` は widget に漏れない(`:host { all: initial }` が遮断する)。
 
+## エージェント向けの公開物
+
+AI エージェントに読ませるための入り口。**HTML をスクレイプさせない**のが目的。
+公開しているものは全部「実体がある」ものだけで、動いていないサーバーは広告していない。
+
+### 使い方
+
+```bash
+# 1. 何があるか知る
+curl https://hikamers.app/llms.txt
+curl https://hikamers.app/.well-known/api-catalog      # RFC 9727
+curl https://hikamers.app/.well-known/ai-catalog.json  # ARD
+
+# 2. ページを Markdown で読む(ブラウザには HTML が返る)
+curl -H "Accept: text/markdown" https://hikamers.app/blog
+
+# 3. MCP で構造化データを取る
+curl -X POST -H "Content-Type: application/json" https://hikamers.app/mcp \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"get_profile","arguments":{}}}'
+
+# 4. A2A で質問する
+curl -X POST -H "Content-Type: application/json" https://hikamers.app/a2a \
+  -d '{"jsonrpc":"2.0","id":1,"method":"message/send","params":{"message":{"kind":"message","messageId":"m1","role":"user","parts":[{"kind":"text","text":"自己紹介して"}]}}}'
+```
+
+### エンドポイント一覧
+
+| パス | 中身 |
+|---|---|
+| `/robots.txt` | `Content-Signal: ai-train=yes, search=yes, ai-input=yes` + `Agentmap` |
+| `/llms.txt` | サイトの索引(人間にも読める) |
+| `/auth.md` | 認証の説明。登録不要(`anonymous`)であることを `agent_auth` ブロックで明示 |
+| `/openapi.json` | 公開 API 7本の仕様 |
+| `/.well-known/api-catalog` | API カタログ(RFC 9727 / `application/linkset+json`) |
+| `/.well-known/ai-catalog.json` | ARD の能力マニフェスト(10エントリ) |
+| `/.well-known/agent-skills/index.json` | Agent Skills の索引(digest 付き) |
+| `/.well-known/mcp/server-card.json` | MCP Server Card(SEP-1649) |
+| `/.well-known/agent-card.json` | A2A Agent Card |
+| `/mcp` | **MCP サーバー本体**(Streamable HTTP / protocol `2025-06-18`) |
+| `/a2a` | **A2A エージェント本体**(JSON-RPC) |
+| 各ページ | `Accept: text/markdown` で Markdown を返す |
+
+### MCP サーバー (`/mcp`)
+
+- tools 6本: `get_profile` / `list_projects` / `list_blog_posts` / `list_bbs_posts` /
+  `get_donate_info` / `get_contacts`
+- resources 7本: サイトの各ページ(`hikamers://page/...`)。中身は Markdown for Agents の
+  `render()` を直接呼ぶので、HTTP を経由しない
+- prompts 2本: `introduce` / `summarize_bbs`
+- セッションは持たない(`initialize` で `Mcp-Session-Id` を返さない)。
+  通知(id なし)は 202、`GET` は 405(SSE は提供しない)
+
+### A2A エージェント (`/a2a`)
+
+- `message/send` のみ。質問文をキーワードでルーティングして該当データを返す
+- streaming / pushNotifications は未実装。カードで `false` と明示している
+- タスクは保持しない(`tasks/get` は 404)
+
+### 落とし穴(すべて実測)
+
+- **`NextResponse.rewrite()` はクエリ文字列を落とす。** ミドルウェアで `?path=/blog` を付けても
+  ルート側では `"/"` になっていた(全ページがトップの Markdown を返していた)。
+  → パスは**リクエストヘッダ**(`x-md-path`)で渡している。
+- **ARD の `representativeQueries` は 2〜5 件必要。** 1件だと構造チェックで弾かれる。
+- **`auth.md` は「登録を説明している」と判定されないと通らない。** 文章で「登録はありません」と
+  書くだけでは足りず、`registration method` / `register_uri` / `claim_uri` を機械可読に並べる
+  必要があった。
+- **Cloudflare がエッジでキャッシュする。** `robots.txt` を直しても `cf-cache-status: HIT` の間は
+  古い内容が返る(実測 `age: 2860`)。反映には purge が要る。
+- **`NEXT_PUBLIC_*` はビルド時に焼き込まれる。** ビルドコマンドで `NEXT_PUBLIC_ONION_URL` を
+  渡し忘れると `/mirror` が伏せ字に戻る(実行時の env では直らない)。
+
 ## デプロイ (hikamers.app)
 
 `hikamers.app` は自宅 LAN 上のセルフホスト Coolify で配信している。

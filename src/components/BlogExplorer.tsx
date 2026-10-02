@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { BLOG, SOURCES, type BlogPost, type SourceKey } from "@/lib/profile";
+import { BLOG, SOURCES, SOURCE_LABELS, SOURCE_ORDER, type BlogPost, type SourceKey } from "@/lib/profile";
 import type { BlogFeed } from "@/lib/blog";
 import { subscribeBlogFeed } from "@/lib/blogFeed";
 import { useI18n } from "@/lib/i18n";
 import { Reveal, SectionHeading } from "./ui";
 
-const ALL: SourceKey[] = ["note", "qiita", "beastnote", "x"];
+const ALL: SourceKey[] = SOURCE_ORDER;
 
 export function BlogExplorer({ compact = false, limit }: { compact?: boolean; limit?: number }) {
   const { t, locale } = useI18n();
@@ -56,7 +56,7 @@ export function BlogExplorer({ compact = false, limit }: { compact?: boolean; li
         </Reveal>
       ) : (
         <Reveal>
-          <SectionHeading index="06" title={t("sec.blog")} sub={`${posts.length} posts / note · Qiita · 野獣ノート · X`} id="blog" />
+          <SectionHeading index="06" title={t("sec.blog")} sub={`${posts.length} posts / ${SOURCE_LABELS.join(" · ")}`} id="blog" />
         </Reveal>
       )}
 
@@ -180,8 +180,8 @@ export function BlogExplorer({ compact = false, limit }: { compact?: boolean; li
       {!compact ? (
         <p className="mt-4 text-xs text-sub">
           {locale === "ja"
-            ? "note / Qiita / 野獣ノート / X に書いたものをまとめて検索できます。"
-            : "Search everything I've written on note, Qiita, Beast Note and X."}
+            ? `${SOURCE_LABELS.join(" / ")} に書いたものをまとめて検索できます。`
+            : `Search everything I've written on ${SOURCE_LABELS.join(", ")}.`}
         </p>
       ) : null}
     </section>

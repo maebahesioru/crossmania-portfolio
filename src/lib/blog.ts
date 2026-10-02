@@ -16,13 +16,14 @@
  */
 
 import { readJson, writeJson } from "./store";
-import { BLOG, type BlogPost, type SourceKey } from "./profile";
+import { BLOG, SOURCE_ORDER, type BlogPost, type SourceKey } from "./profile";
 
 const UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
 
 export const NOTE_USER = "zyuuzika";
 export const QIITA_USER = "maebahesioru";
+export const ZENN_USER = "maebahesioru";
 export const BEASTNOTE_AUTHOR = "maebahesioru";
 const X_NOTE =
   "X は新規投稿を自動検知しません(手動運用)。載せるときは profile.ts の BLOG に URL を1行足してください。";
@@ -148,6 +149,15 @@ async function fetchNote(): Promise<BlogPost[]> {
 async function fetchQiita(): Promise<BlogPost[]> {
   const xml = await http(`https://qiita.com/${QIITA_USER}/feed`);
   return parseAtom(xml).map((x) => ({ ...x, source: "qiita" as const }));
+}
+
+/**
+ * Zenn には公式 RSS がある: `https://zenn.dev/<user>/feed`(RSS 2.0)。
+ * ページをスクレイプする必要はない。
+ */
+async function fetchZenn(): Promise<BlogPost[]> {
+  const xml = await http(`https://zenn.dev/${ZENN_USER}/feed`);
+  return parseRss(xml).map((x) => ({ ...x, source: "zenn" as const }));
 }
 
 /**
@@ -299,13 +309,17 @@ export async function collectBlog(): Promise<BlogFeed> {
   const xSeeds = BLOG.filter((p) => p.source === "x").map((p) => p.url);
   const bnSeeds = BLOG.filter((p) => p.source === "beastnote").map((p) => p.url);
 
-  const [note, qiita, beast, x] = await Promise.all([
+  const [note, qiita, zenn, beast, x] = await Promise.all([
     fetchNote().catch((e) => {
       status.note = { ok: false, count: 0, error: String(e).slice(0, 80) };
       return [] as BlogPost[];
     }),
     fetchQiita().catch((e) => {
       status.qiita = { ok: false, count: 0, error: String(e).slice(0, 80) };
+      return [] as BlogPost[];
+    }),
+    fetchZenn().catch((e) => {
+      status.zenn = { ok: false, count: 0, error: String(e).slice(0, 80) };
       return [] as BlogPost[];
     }),
     fetchBeastNote(bnSeeds).catch((e) => {
@@ -315,7 +329,7 @@ export async function collectBlog(): Promise<BlogFeed> {
     fetchX(xSeeds),
   ]);
 
-  const live: Record<string, BlogPost[]> = { note, qiita, beastnote: beast, x };
+  const live: Record<string, BlogPost[]> = { note, qiita, zenn, beastnote: beast, x };
 
   /**
    * ⚠️ 失敗したソースをそのまま空で通すと、自動検知で載っていた投稿が一覧から消える。
@@ -326,7 +340,7 @@ export async function collectBlog(): Promise<BlogFeed> {
    */
   const cached = await readJson<SourceCache>(CACHE_FILE, {});
   const next: SourceCache = { ...cached };
-  const SOURCES: SourceKey[] = ["note", "qiita", "beastnote", "x"];
+  const SOURCES: SourceKey[] = SOURCE_ORDER;
 
   for (const s of SOURCES) {
     const base = live[s] ?? [];
@@ -335,14 +349,20 @@ export async function collectBlog(): Promise<BlogFeed> {
     const add = prev.filter((p) => !seen.has(key(p.url)));
     live[s] = [...base, ...add];
 
+    /**
+     * ⚠️ 「前回の結果で補った」を stale にしてはいけない。
+     *    RSS は最新N件しか返さないので、**正常に取れていても**古い分は必ずキャッシュから
+     *    補う。それを stale と呼ぶと毎回「取得失敗」に見える(実測: Qiita が常に stale になった)。
+     *    stale = 今回の取得そのものが失敗した、の意味にする。
+     */
+    const fetchFailed = status[s] !== undefined && status[s].ok === false;
     const dates = live[s].map((p) => p.date).filter(Boolean).sort();
     status[s] = {
       ok: true,
       count: live[s].length,
       latest: dates[dates.length - 1],
       error: status[s]?.error,
-      // 前回の結果で補った = 古い内容が混ざっている
-      ...(add.length ? { stale: true } : {}),
+      ...(fetchFailed ? { stale: true } : {}),
     };
     if (live[s].length) next[s] = { posts: live[s], at: new Date().toISOString() };
   }

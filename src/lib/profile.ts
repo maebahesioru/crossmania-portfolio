@@ -275,14 +275,25 @@ export type BlogPost = {
   /** 公開日 (YYYY-MM-DD)。note/Qiita/野獣ノート は自動取得、X は fxtwitter から */
   date?: string;
 };
-export type SourceKey = "x" | "note" | "qiita" | "beastnote";
+export type SourceKey = "x" | "note" | "qiita" | "zenn" | "beastnote";
 
 export const SOURCES: Record<SourceKey, { label: string; color: string }> = {
   x: { label: "X", color: "#1d9bf0" },
   note: { label: "note", color: "#2cb696" },
   qiita: { label: "Qiita", color: "#55c500" },
+  zenn: { label: "Zenn", color: "#3ea8ff" },
   beastnote: { label: "野獣ノート", color: "#f0a02a" },
 };
+
+/**
+ * 一覧のフィルタ・集計・見出しの並び順。
+ * ⚠️ ソースを足すときはここに1行足すだけでよい(blog.ts と BlogExplorer の両方が参照する)。
+ *    以前は同じ配列が2箇所に書かれていて、足すたびに揃える必要があった。
+ */
+export const SOURCE_ORDER: SourceKey[] = ["note", "qiita", "zenn", "beastnote", "x"];
+
+/** 見出しなどに並べる用のラベル一覧(SOURCE_ORDER と同じ順) */
+export const SOURCE_LABELS: string[] = SOURCE_ORDER.map((s) => SOURCES[s].label);
 
 export const BLOG: BlogPost[] = [
   { title: "無料で今すぐにできるX凍結対策一覧", url: "https://note.com/zyuuzika/n/nc8d775e48585", source: "note", date: "2025-05-12" },

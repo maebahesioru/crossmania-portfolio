@@ -40,7 +40,8 @@ export async function GET(req: Request) {
   });
 }
 
-async function render(path: string): Promise<string | null> {
+// MCP の resources/read からも直接呼ぶ(HTTP を経由しない)
+export async function render(path: string): Promise<string | null> {
   switch (path) {
     case "/":
       return profileMarkdown() + "\n---\n\n" + llmsTxt();

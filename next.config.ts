@@ -7,6 +7,32 @@ const nextConfig: NextConfig = {
    * ⚠️ これを外すと Dockerfile の `COPY .next/standalone` が失敗する。
    */
   output: "standalone",
+
+  /**
+   * ホームの応答に Link ヘッダを足す(エージェント向けの発見可能性)。
+   * RFC 8288 の Link ヘッダ + RFC 9727 の api-catalog。
+   *
+   * ⚠️ ここに書く URL は実在させること。エージェントがそのまま辿る。
+   */
+  async headers() {
+    return [
+      {
+        source: "/",
+        headers: [
+          {
+            key: "Link",
+            value: [
+              '</.well-known/api-catalog>; rel="api-catalog"',
+              '</openapi.json>; rel="service-desc"',
+              '</llms.txt>; rel="service-doc"',
+              '</auth.md>; rel="describedby"',
+              '</.well-known/agent-skills/index.json>; rel="describedby"',
+            ].join(", "),
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;

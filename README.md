@@ -302,13 +302,31 @@ console.log("thumbprint:",t);console.log(JSON.stringify(priv))'
 3. **favicon 中継で縮小**。表示は 22〜44px なので 96px に縮めて WebP 化
    (16.3KB → 5.3KB / 24枚)。SVG はそのまま、縮小して大きくなる場合は元を返す。
 
+### さらに: エッジキャッシュとLCP
+
+- **Cloudflare がHTMLをキャッシュしていなかった。** オリジンは `s-maxage=31536000` を
+  返し `x-nextjs-prerender: 1`(完全に静的)なのに、`cf-cache-status: DYNAMIC` だった。
+  原因は `Vary: rsc, next-router-state-tree, ...` — Cloudflare は Accept-Encoding 以外の
+  Vary があるレスポンスをキャッシュしない。
+  → Cache Rule を1本追加(`cache: true` + `edge_ttl 600` + `browser_ttl 300`)。
+  RSC リクエスト(`RSC: 1` ヘッダ)は除外してあるのでクライアント遷移は壊れない。
+- **LCP は keepandroidopen のバナー**(`DIV.kao-banner`)。公式スクリプトが挿入するので、
+  LCP が FCP より必ず後ろになる。そのオリジンへ `preconnect` + `dns-prefetch` を追加。
+
+### 計測の注意
+
+**Mullvad 接続中は数字が大きく歪む。** DAITA + マルチホップ + 量子耐性が有効だと
+TCP 接続だけで 875ms かかる(実測)。VPN を外した VM100 からは connect 68ms / TTFB 135ms。
+同じ回線でも VPN の有無で TTFB が 135ms ⇄ 358ms と変わる。
+
 ### 残っているもの
 
 - **JS 180KB** は React/Next の下限。ここから先は構成を変えるしかない
-- **Geist 66KB**(latin サブセット2種)。ブランドフォントなので残している
+- **Geist 66KB**(latin サブセット2種)。両方とも実際に使われている(mono は437要素)
 - **Cloudflare が `/.webmcp/bridge.js` (47.6KB / gzip 14.3KB) を HTML に注入している。**
   `server: cloudflare` で、ローカルの HTML には無い。ゾーン側の設定。
   これがあるとスキャナの `webMcp` が通るので、消すかは判断が要る
+
 
 ## デプロイ (hikamers.app)
 

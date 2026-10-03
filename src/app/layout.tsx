@@ -103,6 +103,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {THEME_INIT_SCRIPT}
         </Script>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }} />
+        {/* LCP は keepandroidopen のバナー(公式スクリプトが挿入する DIV)なので、
+            そのオリジンへの接続を HTML 解析中に始めておく。
+            Cloudflare Insights は CF が自動注入するビーコン。 */}
+        <link rel="preconnect" href="https://keepandroidopen.org" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://keepandroidopen.org" />
+        <link rel="preconnect" href="https://static.cloudflareinsights.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://static.cloudflareinsights.com" />
         {/* ARD(Agentic Resource Discovery)の能力マニフェストへの導線。
             React が head に巻き上げる。robots.txt の Agentmap と同じものを指す。 */}
         <link rel="ai-catalog" href="/.well-known/ai-catalog.json" />

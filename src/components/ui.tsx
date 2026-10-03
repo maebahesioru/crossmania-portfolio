@@ -2,46 +2,31 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
-/** スクロールで出現するアニメーション */
+/**
+ * スクロールで出現するアニメーション。
+ *
+ * 以前は IntersectionObserver で `.in` を付けていたが、**ハイドレーションが終わるまで
+ * 画面内の要素が opacity:0 のまま**になり、初回描画がその分遅れていた
+ * (実測: リソースは100msで揃うのに FCP が904msまで遅れていた)。
+ * さらに `threshold: 0.12` に届かない要素は**永遠に透明のまま**だった(実測3件)。
+ *
+ * 今は CSS のスクロール駆動アニメーション (`animation-timeline: view()`) に任せる:
+ * - JS が要らないので初回描画を止めない
+ * - 画面内にある要素は最初から見える(タイムラインが終端にあるため)
+ * - 未対応ブラウザはアニメーションしないだけで、内容は最初から見える
+ *
+ * `delay` は互換のために受け取るだけで使わない(タイムライン駆動では意味が薄い)。
+ */
 export function Reveal({
   children,
-  delay = 0,
   className = "",
 }: {
   children: ReactNode;
+  /** @deprecated スクロール駆動アニメーションでは未使用 */
   delay?: number;
   className?: string;
 }) {
-  const ref = useRef<HTMLDivElement | null>(null);
-  const [shown, setShown] = useState(false);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          if (e.isIntersecting) {
-            setShown(true);
-            io.disconnect();
-          }
-        }
-      },
-      { threshold: 0.12, rootMargin: "0px 0px -8% 0px" },
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
-
-  return (
-    <div
-      ref={ref}
-      className={`reveal ${shown ? "in" : ""} ${className}`}
-      style={{ transitionDelay: `${delay}ms` }}
-    >
-      {children}
-    </div>
-  );
+  return <div className={`reveal ${className}`}>{children}</div>;
 }
 
 /** セクション見出し: 番号 + ラベル + 罫線 */

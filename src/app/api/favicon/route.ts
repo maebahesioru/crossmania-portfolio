@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import sharp from "sharp";
 import { signedFetch } from "@/lib/webbotauth";
 
 /**
@@ -302,6 +303,29 @@ export async function GET(request: Request) {
         },
       });
 
+    /**
+     * アイコンの表示は 22〜44px なので、元が 180px や 200px でも意味がない。
+     * 96px に縮めて WebP にする(実測: 24枚で 285KB -> 数十KB)。
+     * SVG はベクタなのでそのまま。縮小に失敗したら元を返す(表示が壊れるより重い方がマシ)。
+     */
+    const shrink = async (buf: ArrayBuffer, type: string): Promise<{ body: ArrayBuffer; type: string }> => {
+      if (type.includes("svg")) return { body: buf, type };
+      try {
+        const out = await sharp(Buffer.from(buf))
+          .resize(96, 96, { fit: "inside", withoutEnlargement: true })
+          .webp({ quality: 82 })
+          .toBuffer();
+        // 元より小さくなった時だけ採用する(小さい画像を膨らませない)
+        if (out.byteLength < buf.byteLength) {
+          const ab = out.buffer.slice(out.byteOffset, out.byteOffset + out.byteLength) as ArrayBuffer;
+          return { body: ab, type: "image/webp" };
+        }
+      } catch {
+        // 元のまま返す
+      }
+      return { body: buf, type };
+    };
+
     for (const url of tries) {
       try {
         const r = await signedFetch(url, {
@@ -321,8 +345,9 @@ export async function GET(request: Request) {
         if (!/image\//.test(type) && !/octet-stream|icon/.test(type)) continue;
 
         if (iconShaped(buf, type)) {
-          cache.set(key, { ok: true, at: Date.now(), body: buf, type });
-          return respond(buf, type, true);
+          const s = await shrink(buf, type);
+          cache.set(key, { ok: true, at: Date.now(), body: s.body, type: s.type });
+          return respond(s.body, s.type, true);
         }
         // 横長のカード画像など。他に候補が無ければこれを使う。
         if (!fallbackImage) fallbackImage = { buf, type };
@@ -332,8 +357,9 @@ export async function GET(request: Request) {
     }
 
     if (fallbackImage) {
-      cache.set(key, { ok: true, at: Date.now(), body: fallbackImage.buf, type: fallbackImage.type });
-      return respond(fallbackImage.buf, fallbackImage.type, false);
+      const s = await shrink(fallbackImage.buf, fallbackImage.type);
+      cache.set(key, { ok: true, at: Date.now(), body: s.body, type: s.type });
+      return respond(s.body, s.type, false);
     }
     throw new Error("no candidate worked");
   } catch {

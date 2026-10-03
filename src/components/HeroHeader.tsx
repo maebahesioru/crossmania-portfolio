@@ -61,13 +61,22 @@ export function HeroHeader() {
             aria-hidden
           />
           {/* eslint-disable-next-line @next/next/no-img-element */}
+          {/* 表示は最大 640px 高(幅 ~497px)。元の 1240px は過大だったので
+              500w / 1000w の2枚に絞って srcset で出し分ける(実測 -94KB)。
+              LCP ではないがファーストビューなので fetchpriority=high。 */}
           <picture className="block">
-            <source srcSet="/hero-character.webp" type="image/webp" />
+            <source
+              srcSet="/hero-character-500.webp 500w, /hero-character-1000.webp 1000w"
+              sizes="(max-width: 640px) 224px, (max-width: 768px) 249px, (max-width: 1024px) 373px, (max-width: 1280px) 435px, 497px"
+              type="image/webp"
+            />
             <img
               src="/hero-character.png"
               alt="十字架_mania のキャラクター"
               width={1240}
               height={1597}
+              fetchPriority="high"
+              decoding="async"
               className="hero-char relative h-72 w-auto drop-shadow-[0_16px_34px_rgba(0,0,0,0.5)] sm:h-80 md:h-[480px] lg:h-[560px] xl:h-[640px]"
             />
           </picture>

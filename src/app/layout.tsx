@@ -65,6 +65,8 @@ export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",
   robots: { index: true, follow: true },
   category: "technology",
+  // Google AdSense のサイト確認用。ads.txt と合わせて設置する
+  other: { "google-adsense-account": "ca-pub-9868361167191737" },
 };
 
 export const viewport: Viewport = {
@@ -102,6 +104,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Script id="theme-init" strategy="beforeInteractive">
           {THEME_INIT_SCRIPT}
         </Script>
+        {/* Google Consent Mode v2。広告Cookieは**既定で拒否**にしておき、
+            クッキーバナーで「同意する」が選ばれたときだけ許可する。
+            この既定値は AdSense のスクリプトより先に実行される必要があるので
+            beforeInteractive で置く。 */}
+        <Script id="consent-default" strategy="beforeInteractive">
+          {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}
+gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'denied'});`}
+        </Script>
+        {/* Google AdSense。async なので描画はブロックしない。
+            SRI(integrity) は付けない: Google が随時更新する配信スクリプトで、
+            ハッシュを固定するとある日広告が読み込めなくなる(公式の設置方法に従う)。 */}
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9868361167191737"
+          crossOrigin="anonymous"
+        />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }} />
         {/* LCP は keepandroidopen のバナー(公式スクリプトが挿入する DIV)なので、
             そのオリジンへの接続を HTML 解析中に始めておく。

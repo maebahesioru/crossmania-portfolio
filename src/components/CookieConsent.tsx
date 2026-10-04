@@ -6,16 +6,36 @@ import { useI18n } from "@/lib/i18n";
 
 const KEY = "crossmania-cookie-consent";
 
+/**
+ * Google Consent Mode v2 に同意状態を伝える。
+ * 既定はすべて denied(layout の consent-default で設定済み)。
+ * 「同意する」を選んだときだけ広告用 Cookie を許可する。
+ */
+function applyConsent(granted: boolean) {
+  const w = window as unknown as { gtag?: (...args: unknown[]) => void };
+  if (typeof w.gtag !== "function") return;
+  const v = granted ? "granted" : "denied";
+  w.gtag("consent", "update", {
+    ad_storage: v,
+    ad_user_data: v,
+    ad_personalization: v,
+    analytics_storage: v,
+  });
+}
+
 export function CookieConsent() {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
     try {
-      if (!localStorage.getItem(KEY)) {
+      const saved = localStorage.getItem(KEY);
+      if (!saved) {
         const id = setTimeout(() => setOpen(true), 900);
         return () => clearTimeout(id);
       }
+      // 以前の選択を Consent Mode に反映する(既定は denied のまま)
+      applyConsent(saved === "all");
     } catch {
       /* ignore */
     }
@@ -27,6 +47,7 @@ export function CookieConsent() {
     } catch {
       /* ignore */
     }
+    applyConsent(v === "all");
     setOpen(false);
   };
 

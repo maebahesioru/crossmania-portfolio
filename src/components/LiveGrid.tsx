@@ -39,8 +39,8 @@ export function LiveGrid() {
       <Reveal className="mt-4">
         <p className="text-[11.5px] text-sub">
           {locale === "ja"
-            ? "天気は open-meteo、GitHubは公開API、アクセス解析は自前のJSONカウンター(外部トラッカーなし)を使っています。"
-            : "Weather from open-meteo, GitHub from the public API, analytics from a self-hosted JSON counter — no third-party trackers."}
+            ? "天気は open-meteo、GitHubは公開API、アクセス解析は自前のJSONカウンターを使っています(この欄のデータに外部トラッカーは使っていません)。"
+            : "Weather from open-meteo, GitHub from the public API, and analytics from a self-hosted JSON counter — this section uses no third-party trackers."}
         </p>
       </Reveal>
       <span className="hidden">{t("sec.links")}</span>

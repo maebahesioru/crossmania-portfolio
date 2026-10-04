@@ -107,7 +107,7 @@ const DICT = {
     "client.hide": "隠す",
     "cookie.title": "Cookies の使用について",
     "cookie.body":
-      "このサイトは訪問者数のカウント、言語・テーマ設定の保存、荒らし対策のために最小限の Cookie / localStorage を使用します。広告・第三者トラッキングは一切ありません。",
+      "このサイトは訪問者数のカウント、言語・テーマ設定の保存、荒らし対策に Cookie / localStorage を使用します。加えて、広告配信のために Google AdSense を利用しており、Google とそのパートナーが Cookie を使用して、興味関心に応じた広告を配信します。「必須のみ」を選んだ場合、広告用の Cookie は使用されません。",
     "cookie.accept": "同意する",
     "cookie.essential": "必須のみ",
     "cookie.more": "利用規約を見る",
@@ -269,7 +269,7 @@ const DICT = {
     "client.hide": "Hide",
     "cookie.title": "About Cookies",
     "cookie.body":
-      "This site uses a minimal amount of cookies / localStorage for the visitor counter, for remembering your language and theme, and for anti-spam. No ads, no third-party tracking.",
+      "Cookies / localStorage are used for the visitor counter, for remembering your language and theme, and for anti-spam. This site also serves ads through Google AdSense: Google and its partners use cookies to deliver ads based on your interests. If you choose \"Essential only\", no advertising cookies are used.",
     "cookie.accept": "Accept",
     "cookie.essential": "Essential only",
     "cookie.more": "Read the terms",

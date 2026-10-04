@@ -118,7 +118,7 @@ const TERMS: Block[] = [
     body: {
       ja: [
         {
-          p: "当サイトは、訪問者数のカウント、言語・テーマ設定の保存、荒らし対策のために Cookie および localStorage を最小限使用します。広告配信・第三者トラッキング(Google Analytics 等)は一切使用していません。",
+          p: "当サイトは、訪問者数のカウント、言語・テーマ設定の保存、荒らし対策のために Cookie および localStorage を最小限使用します。加えて、広告配信のために Google AdSense を利用しており、Google およびそのパートナーが Cookie を使用して広告を配信します。クッキーバナーで「必須のみ」を選んだ場合、広告用の Cookie は使用されません。Google の広告 Cookie は Google の広告設定から無効にできます。",
         },
         {
           p: "訪問者カウンターは当方が自前で運営しています。集計結果は当方のサーバー内にのみ保存され、外部サービスへ送信されることはありません。",
@@ -126,7 +126,7 @@ const TERMS: Block[] = [
       ],
       en: [
         {
-          p: "We use a minimal amount of cookies and localStorage for the visitor counter, for remembering language/theme, and for anti-abuse. We use no advertising and no third-party tracking (no Google Analytics).",
+          p: "We use a minimal amount of cookies and localStorage for the visitor counter, for remembering language/theme, and for anti-abuse. This site also serves ads through Google AdSense, and Google and its partners use cookies to deliver them. If you choose \"Essential only\" in the cookie banner, no advertising cookies are used. You can opt out of Google's advertising cookies in Google Ad Settings.",
         },
         {
           p: "The visitor counter is self-hosted. All counts stay on our own server and are never sent to external services.",

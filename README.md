@@ -277,6 +277,30 @@ console.log("thumbprint:",t);console.log(JSON.stringify(priv))'
 - **`NEXT_PUBLIC_*` はビルド時に焼き込まれる。** ビルドコマンドで `NEXT_PUBLIC_ONION_URL` を
   渡し忘れると `/mirror` が伏せ字に戻る(実行時の env では直らない)。
 
+## 広告 (Google AdSense)
+
+| 項目 | 場所 |
+|---|---|
+| ads.txt | `public/ads.txt`(`google.com, pub-9868361167191737, DIRECT, ...`) |
+| サイト確認 | `layout.tsx` の metadata `other` → `<meta name="google-adsense-account">` |
+| 配信スクリプト | `layout.tsx` の `<script async src=".../adsbygoogle.js?client=ca-pub-...">` |
+| 同意 | Google Consent Mode v2 |
+
+**同意の扱い**: 既定はすべて `denied`(`layout.tsx` の `consent-default` を
+`beforeInteractive` で AdSense より先に実行)。クッキーバナーで「同意する」を
+選んだときだけ `CookieConsent.tsx` が `gtag('consent','update', ...granted)` を送る。
+「必須のみ」なら `denied` のまま = 広告 Cookie を使わない。
+
+⚠️ **広告を入れたらプライバシー表明も直すこと。** クッキーバナー(`i18n.tsx`)と
+利用規約(`Terms.tsx`)、LiveGrid の注記が「広告・第三者トラッキングは一切ありません」と
+言っていたので実態に合わせて書き換えた。**片方だけ直すと嘘になる。**
+
+⚠️ AdSense のスクリプトには SRI(integrity) を付けない。Google が随時更新する
+配信スクリプトなので、ハッシュを固定するとある日広告が読み込めなくなる。
+
+⚠️ BBS(ユーザー投稿)があるので、AdSense のポリシー上 UGC の管理責任が生じる。
+荒れた投稿が広告と並ぶとアカウント停止があり得る。
+
 ## 表示速度
 
 初回転送を **1236KB → 401KB**、FCP を **1604ms → 496ms** にした(本番実測・3回平均)。

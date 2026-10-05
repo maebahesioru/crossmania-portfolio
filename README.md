@@ -195,6 +195,7 @@ curl -X POST -H "Content-Type: application/json" https://hikamers.app/a2a \
 | パス | 中身 |
 |---|---|
 | `/robots.txt` | `Content-Signal: ai-train=yes, search=yes, ai-input=yes` + `Agentmap` |
+| `/security.txt` | 脆弱性の報告先 (RFC 9116)。`/.well-known/security.txt` も同じ内容 |
 | `/llms.txt` | サイトの索引(人間にも読める) |
 | `/auth.md` | 認証の説明。登録不要(`anonymous`)であることを `agent_auth` ブロックで明示 |
 | `/openapi.json` | 公開 API 7本の仕様 |

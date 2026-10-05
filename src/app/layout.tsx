@@ -66,7 +66,12 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
   category: "technology",
   // Google AdSense のサイト確認用。ads.txt と合わせて設置する
-  other: { "google-adsense-account": "ca-pub-9868361167191737" },
+  // norton-safeweb: Norton Safe Web のサイト所有権確認用（誤検知評価の異議申し立てに必要）
+  other: {
+    "google-adsense-account": "ca-pub-9868361167191737",
+    "norton-safeweb-site-verification":
+      "P4A0L7PYMM53HMUPBD1XDF2B08SUEO8-8BTPVDLC05XHI5D9QIDXPVVRD5NM4X4IW-ARA7L8W52MSZ0M2G5CV64BNGXFF8PTMHVJA9X6YSY4DNDN7NRQHN-4EKME1Z28",
+  },
 };
 
 export const viewport: Viewport = {

@@ -63,7 +63,7 @@ export function CookieConsent() {
           <p className="text-[13px] font-bold">{t("cookie.title")}</p>
           <p className="mt-1 text-[12px] leading-relaxed text-sub">
             {t("cookie.body")}{" "}
-            <Link href="/terms" className="link">
+            <Link href="/privacy" className="link">
               {t("cookie.more")}
             </Link>
           </p>

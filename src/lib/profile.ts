@@ -434,5 +434,6 @@ export const NAV = [
   { href: "/donate", key: "nav.donate" },
   { href: "/mirror", key: "nav.mirror" },
   { href: "/terms", key: "nav.terms" },
+  { href: "/privacy", key: "nav.privacy" },
   { href: "/license", key: "nav.license" },
 ];

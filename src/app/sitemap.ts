@@ -6,10 +6,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const pages: { path: string; priority: number; freq: MetadataRoute.Sitemap[number]["changeFrequency"] }[] = [
     { path: "", priority: 1, freq: "weekly" },
     { path: "/blog", priority: 0.8, freq: "weekly" },
+    { path: "/blog/twitter-election-tech", priority: 0.7, freq: "monthly" },
+    { path: "/blog/homelab-n100", priority: 0.7, freq: "monthly" },
+    { path: "/blog/ai-agent-development", priority: 0.7, freq: "monthly" },
+    { path: "/blog/encuentro-2026", priority: 0.6, freq: "yearly" },
     { path: "/bbs", priority: 0.7, freq: "daily" },
     { path: "/donate", priority: 0.5, freq: "monthly" },
     { path: "/mirror", priority: 0.3, freq: "monthly" },
     { path: "/terms", priority: 0.3, freq: "yearly" },
+    { path: "/privacy", priority: 0.3, freq: "yearly" },
     { path: "/license", priority: 0.3, freq: "yearly" },
   ];
   return pages.map((p) => ({

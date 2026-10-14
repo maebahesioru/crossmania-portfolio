@@ -11,6 +11,24 @@ export const metadata: Metadata = {
 /** このサイト内に書いた記事（外部リンク集とは別枠で先頭に表示する） */
 const LOCAL_POSTS = [
   {
+    title: "Cloudflare Tunnelで自宅サーバーを公開する — 運用で踏んだ落とし穴と対策",
+    href: "/blog/cloudflare-tunnel-pitfalls",
+    date: "2026-10-15",
+    tag: "ネットワーク",
+  },
+  {
+    title: "匿名投票サイトの不正対策をどう設計するか — トークン・レート制限・連投ブロックの実際",
+    href: "/blog/anonymous-vote-anti-abuse",
+    date: "2026-10-15",
+    tag: "設計",
+  },
+  {
+    title: "小さなホームラボのメモリがカツカツになった話 — zram・swap・犯人探しの手順",
+    href: "/blog/homelab-memory-pressure",
+    date: "2026-10-15",
+    tag: "運用",
+  },
+  {
     title: "第1回ツイッタラー衆院選を支えた技術の話",
     href: "/blog/twitter-election-tech",
     date: "2026-10-12",

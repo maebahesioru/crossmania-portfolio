@@ -6,6 +6,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const pages: { path: string; priority: number; freq: MetadataRoute.Sitemap[number]["changeFrequency"] }[] = [
     { path: "", priority: 1, freq: "weekly" },
     { path: "/blog", priority: 0.8, freq: "weekly" },
+    { path: "/blog/cloudflare-tunnel-pitfalls", priority: 0.7, freq: "monthly" },
+    { path: "/blog/anonymous-vote-anti-abuse", priority: 0.7, freq: "monthly" },
+    { path: "/blog/homelab-memory-pressure", priority: 0.7, freq: "monthly" },
     { path: "/blog/twitter-election-tech", priority: 0.7, freq: "monthly" },
     { path: "/blog/homelab-n100", priority: 0.7, freq: "monthly" },
     { path: "/blog/ai-agent-development", priority: 0.7, freq: "monthly" },

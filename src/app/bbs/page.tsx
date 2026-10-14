@@ -15,6 +15,17 @@ export default function BbsPage() {
       <p className="mt-3 max-w-3xl text-[13.5px] leading-relaxed text-sub">
         誰でも匿名で書き込めます。誹謗中傷・個人情報の晒し・スパムは削除します。
       </p>
+      <div className="mt-4 max-w-3xl space-y-2 text-[13px] leading-relaxed text-sub">
+        <p>
+          キリ番報告・相互リンクの申し込み・サイトへの感想・雑談などにどうぞ。
+          アカウント登録は不要で、書き込みは匿名です。なお荒らし対策として、
+          同じ内容の連投や同一ページへの短時間の連続投稿は自動でブロックされることがあります。
+        </p>
+        <p>
+          プロフィールやブログへのご意見・ご依頼は、X(@maebahesioru2)のDMなどでも受け付けています。
+          いただいた感想は開発の励みになります。
+        </p>
+      </div>
       <div className="mt-8">
         <BBS standalone />
       </div>

@@ -11,6 +11,24 @@ export const metadata: Metadata = {
 /** このサイト内に書いた記事（外部リンク集とは別枠で先頭に表示する） */
 const LOCAL_POSTS = [
   {
+    title: "WineでWindowsアプリの「クリックが効かない」を描画ライブラリまで追った話",
+    href: "/blog/wine-app-hit-testing",
+    date: "2026-10-20",
+    tag: "デバッグ",
+  },
+  {
+    title: "Arch系Linuxで日本語IMEを乗り換えた話 — インストーラ・既定IM・辞書の3つの罠",
+    href: "/blog/linux-ime-fcitx5",
+    date: "2026-10-20",
+    tag: "環境構築",
+  },
+  {
+    title: "GPUでボーカル分離を自宅に置いた話 — 音源分離モデルをミドルレンジGPUで回す",
+    href: "/blog/local-vocal-separation-gpu",
+    date: "2026-10-20",
+    tag: "音声処理",
+  },
+  {
     title: "Cloudflare Tunnelで自宅サーバーを公開する — 運用で踏んだ落とし穴と対策",
     href: "/blog/cloudflare-tunnel-pitfalls",
     date: "2026-10-15",

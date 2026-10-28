@@ -42,6 +42,38 @@ export default function BlogPage() {
           </Link>
         ))}
       </div>
+
+      <section className="mt-12 max-w-3xl space-y-6 text-[13.5px] leading-relaxed">
+        <div className="space-y-3">
+          <h2 className="display text-xl sm:text-2xl">このブログについて</h2>
+          <p className="text-sub">
+            書いているのは、自宅サーバーとLinuxまわりで実際に詰まったことです。
+            動いた手順だけを並べた記事はなるべく書かないようにしていて、
+            原因が分からなかった時間、切り分けた順番、間違っていた仮説も残すようにしています。
+            同じところで詰まっている人が、検索から来て「次に何を確認すればいいか」だけ持って帰れる記事を狙っています。
+          </p>
+        </div>
+
+        <div className="space-y-3">
+          <h2 className="display text-xl sm:text-2xl">扱っている範囲</h2>
+          <ul className="list-disc space-y-1 pl-5 text-sub">
+            <li>自宅サーバー・コンテナ・デプロイ（反映されない、落ちる、遅い）</li>
+            <li>Linuxデスクトップ（日本語入力、音、GPU、Wine）</li>
+            <li>小さなWebサービスの設計（認証、レート制限、データの持ち方）</li>
+            <li>手元のGPUで動かす系（音源分離、画像・音声の処理）</li>
+          </ul>
+        </div>
+
+        <div className="space-y-3">
+          <h2 className="display text-xl sm:text-2xl">更新と構成</h2>
+          <p className="text-sub">
+            更新は不定期です。何かを直している最中に「これは書いておくべきだ」と思ったときだけ増えます。
+            サイト自体はNext.jsで作り、自宅サーバーのコンテナ上で動かしています。
+            記事はすべて静的なHTMLとして生成しているので、広告や外部スクリプトが無くても読めます。
+            誤りを見つけたときは、XのDMか掲示板から教えてもらえれば直します。
+          </p>
+        </div>
+      </section>
     </div>
   );
 }

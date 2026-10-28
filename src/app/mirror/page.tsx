@@ -6,6 +6,8 @@ export const metadata: Metadata = {
   title: "ミラーページ",
   description: "検閲・ドメイン停止に備えたミラー。Onion ミラーも公開しています。",
   alternates: { canonical: "/mirror" },
+  // 鏡ページはサイトの読み物ではないので検索には出さない
+  robots: { index: false, follow: true },
 };
 
 export default function MirrorPage() {

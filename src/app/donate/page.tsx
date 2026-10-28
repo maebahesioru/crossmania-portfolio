@@ -6,6 +6,8 @@ export const metadata: Metadata = {
   description:
     "十字架_mania への投げ銭。Monero (XMR)・Bitcoin・Litecoin・OFUSE(カード)で受け取っています。いただいた分はすべてサーバー代になります。",
   alternates: { canonical: "/donate" },
+  // 寄付ページはサイトの読み物ではないので検索には出さない
+  robots: { index: false, follow: true },
 };
 
 export default function DonatePage() {

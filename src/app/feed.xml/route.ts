@@ -1,4 +1,4 @@
-import { BLOG, SOURCES } from "@/lib/profile";
+import { LOCAL_POSTS } from "@/lib/localPosts";
 import { SITE } from "@/lib/site";
 
 export const dynamic = "force-static";
@@ -12,13 +12,16 @@ function esc(s: string) {
 }
 
 export async function GET() {
-  const items = BLOG.map((p) => {
-    const date = new Date(Date.UTC(2026, 8, 10)).toUTCString();
+  /* フィードにはサイト内の記事だけを流す。外部サービスに書いた記事を混ぜると
+     フィードがリンク集になり、サイトの中身と一致しなくなる。 */
+  const items = LOCAL_POSTS.map((p) => {
+    const url = `${SITE.url}${p.href}`;
+    const date = new Date(p.date).toUTCString();
     return `    <item>
       <title>${esc(p.title)}</title>
-      <link>${esc(p.url)}</link>
-      <guid isPermaLink="false">${esc(p.url)}</guid>
-      <category>${esc(SOURCES[p.source].label)}</category>
+      <link>${esc(url)}</link>
+      <guid isPermaLink="true">${esc(url)}</guid>
+      <category>${esc(p.tag)}</category>
       <pubDate>${date}</pubDate>
     </item>`;
   }).join("\n");

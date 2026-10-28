@@ -22,7 +22,7 @@ export const PUBLIC_API: { path: string; summary: string; params?: string }[] = 
 /** エージェントが読むべき主要ページ */
 const PAGES: { path: string; title: string; desc: string }[] = [
   { path: "/", title: "ホーム", desc: "プロフィール・Skills・Projects・布陣・リンク・BBS" },
-  { path: "/blog", title: "Blog", desc: "note / Qiita / Zenn / 野獣ノート / X の記事一覧と検索" },
+  { path: "/blog", title: "Blog", desc: "サイト内に書いた技術記事の一覧" },
   { path: "/bbs", title: "BBS", desc: "匿名の掲示板。ロボット確認あり" },
   { path: "/donate", title: "寄付", desc: "Monero / Bitcoin / Litecoin / OFUSE" },
   { path: "/mirror", title: "ミラー", desc: "Clearnet と Tor(.onion) のエンドポイント" },

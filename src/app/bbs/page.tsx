@@ -4,7 +4,9 @@ import { BBS } from "@/components/BBS";
 export const metadata: Metadata = {
   title: "BBS / コメント",
   description: "十字架_mania の掲示板。匿名で書き込めます。キリ番報告・相互リンク・雑談など。",
-  robots: { index: true, follow: true },
+  // 投稿が集まるまでの間は検索インデックスに載せない（本文が実質ゼロのページを
+  // サイトの一部として数えられないようにする）。ナビからの導線は残す。
+  robots: { index: false, follow: true },
 };
 
 export default function BbsPage() {

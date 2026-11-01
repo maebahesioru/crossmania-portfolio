@@ -7,7 +7,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "", priority: 1, freq: "weekly" },
     { path: "/blog", priority: 0.8, freq: "weekly" },
     { path: "/blog/nextjs-deploy-not-reflecting", priority: 0.7, freq: "monthly" },
-    { path: "/blog/adsense-rejection-content-audit", priority: 0.7, freq: "monthly" },
     { path: "/blog/self-hosted-searxng", priority: 0.7, freq: "monthly" },
     { path: "/blog/wine-app-hit-testing", priority: 0.7, freq: "monthly" },
     { path: "/blog/linux-ime-fcitx5", priority: 0.7, freq: "monthly" },

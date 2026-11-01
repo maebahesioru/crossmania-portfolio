@@ -22,12 +22,6 @@ export const LOCAL_POSTS: LocalPost[] = [
     tag: "運用",
   },
   {
-    title: "個人サイトのAdSense審査に2回落ちて分かった、文字数より先に見られる3つのこと",
-    href: "/blog/adsense-rejection-content-audit",
-    date: "2026-10-28",
-    tag: "運用",
-  },
-  {
     title: "検索APIの代わりにSearXNGを自前で立てた話 — JSON APIと運用のつまずき",
     href: "/blog/self-hosted-searxng",
     date: "2026-10-28",

@@ -123,20 +123,12 @@ export default function ElectionTechPage() {
         </p>
         <p className="text-[13px] text-sub">
           ▼ 関連:{" "}
-          <a
-            href="https://tsuittara-yoron.hikamers.app"
-            className="underline underline-offset-2"
-            rel="noopener"
-          >
-            ツイッタラー世論調査
+          <a href="/blog/anonymous-vote-anti-abuse" className="underline underline-offset-2">
+            匿名投票サイトの荒らし対策
           </a>
           {" / "}
-          <a
-            href="https://tsuittara-yoron.hikamers.app/election"
-            className="underline underline-offset-2"
-            rel="noopener"
-          >
-            第1回ツイッタラー衆院選
+          <a href="/blog/homelab-n100" className="underline underline-offset-2">
+            自宅サーバーの構成
           </a>
         </p>
       </article>

@@ -133,15 +133,6 @@ export const PROJECTS: Project[] = [
     tag: { ja: "SNS", en: "SNS" },
   },
   {
-    name: "Hikabooru",
-    url: "https://hikabooru.hikamers.app/",
-    desc: {
-      ja: "Hikakin_Mania 関連の動画像素材を全てここに保存しています！",
-      en: "Every Hikakin_Mania-related image and video asset, archived in one booru.",
-    },
-    tag: { ja: "アーカイブ", en: "Archive" },
-  },
-  {
     name: "拓也さんボイス",
     url: "https://takuya-tts.hikamers.app/",
     desc: {
@@ -149,15 +140,6 @@ export const PROJECTS: Project[] = [
       en: "A GUI on top of the Takuya voice TTS that used to require API surgery to use for free.",
     },
     tag: { ja: "TTS", en: "TTS" },
-  },
-  {
-    name: "マニアスプレッダーのサンサンサンデー特設サイト",
-    url: "https://sunsunsunday.hikamers.app/",
-    desc: {
-      ja: "2026年8月10日、野獣の日に開催したマニアスプレッダーのサンサンサンデー特設サイトです！",
-      en: "Special site for Mania Spreader's サンサンサンデー broadcast held on Beast Day, 2026-08-10.",
-    },
-    tag: { ja: "特設サイト", en: "Event site" },
   },
   {
     name: "ファボなしRTクリッカーゲーム",
@@ -169,15 +151,6 @@ export const PROJECTS: Project[] = [
     tag: { ja: "ゲーム", en: "Game" },
   },
   {
-    name: "イラストさがしったー",
-    url: "https://illustsagasitter.hikamers.app/",
-    desc: {
-      ja: "Twitter(X)にある30日以内に投稿されたイラストを検索できるサイトです！",
-      en: "Search illustrations posted on X within the last 30 days.",
-    },
-    tag: { ja: "検索", en: "Search" },
-  },
-  {
     name: "TwiGacha",
     url: "https://twigacha.hikamers.app/",
     desc: {
@@ -185,15 +158,6 @@ export const PROJECTS: Project[] = [
       en: "A browser card game where SNS users become the cards.",
     },
     tag: { ja: "ゲーム", en: "Game" },
-  },
-  {
-    name: "ツイッタラー世論調査",
-    url: "https://tsuittara-yoron.hikamers.app/",
-    desc: {
-      ja: "Xのユーザーを誰でも匿名で「好き嫌い」と8項目評価できるサイトです！@IDで検索すると未登録のユーザーもその場で追加できます。",
-      en: "An anonymous site for rating X users — like/dislike plus an 8-item score. Search by @handle and unregistered accounts get added on the spot.",
-    },
-    tag: { ja: "世論調査", en: "Poll" },
   },
   {
     name: "ヒカマーズ8values",
@@ -284,58 +248,6 @@ export const APP_TOOLS: AppTool[] = [
     ],
     kind: { ja: "ユーザースクリプト", en: "Userscript" },
   },
-];
-
-export type BlogPost = {
-  title: string;
-  url: string;
-  source: SourceKey;
-  /** 公開日 (YYYY-MM-DD)。note/Qiita/野獣ノート は自動取得、X は fxtwitter から */
-  date?: string;
-};
-export type SourceKey = "x" | "note" | "qiita" | "zenn" | "beastnote";
-
-export const SOURCES: Record<SourceKey, { label: string; color: string }> = {
-  x: { label: "X", color: "#1d9bf0" },
-  note: { label: "note", color: "#2cb696" },
-  qiita: { label: "Qiita", color: "#55c500" },
-  zenn: { label: "Zenn", color: "#3ea8ff" },
-  beastnote: { label: "野獣ノート", color: "#f0a02a" },
-};
-
-/**
- * 一覧のフィルタ・集計・見出しの並び順。
- * ⚠️ ソースを足すときはここに1行足すだけでよい(blog.ts と BlogExplorer の両方が参照する)。
- *    以前は同じ配列が2箇所に書かれていて、足すたびに揃える必要があった。
- */
-export const SOURCE_ORDER: SourceKey[] = ["note", "qiita", "zenn", "beastnote", "x"];
-
-/** 見出しなどに並べる用のラベル一覧(SOURCE_ORDER と同じ順) */
-export const SOURCE_LABELS: string[] = SOURCE_ORDER.map((s) => SOURCES[s].label);
-
-export const BLOG: BlogPost[] = [
-  { title: "無料で今すぐにできるX凍結対策一覧", url: "https://note.com/zyuuzika/n/nc8d775e48585", source: "note", date: "2025-05-12" },
-  { title: "ヒカマニbot 利用規約", url: "https://note.com/zyuuzika/n/n520e7566d6fe", source: "note", date: "2025-05-25" },
-  { title: "ヒカマニbot プライバシーポリシー", url: "https://note.com/zyuuzika/n/ne5e9e48eb014", source: "note", date: "2025-05-25" },
-  { title: "ヒカマーWikiの各記事全文をAIに読み込ませてヒカマー引退時期を予想させてみた", url: "https://note.com/zyuuzika/n/n0ec66cc8b30e", source: "note", date: "2025-06-29" },
-  { title: "ヒカマーWikiの各記事全文をAIに読み込ませてMBTIを予想させてみた", url: "https://note.com/zyuuzika/n/nd19c1ce4360a", source: "note", date: "2025-06-29" },
-  { title: "ヒカマーWikiの各記事全文をAIに読み込ませて七夕の願い事を予想させてみた", url: "https://note.com/zyuuzika/n/n3a6cd152129e", source: "note", date: "2025-07-07" },
-  { title: "ヒカマニのMisskey鯖を作ってみた", url: "https://note.com/zyuuzika/n/n4fa5bc35b7f6", source: "note", date: "2025-10-08" },
-  { title: "#ヒカマーAI生成 カメオ一覧忘備録", url: "https://note.com/zyuuzika/n/nbbad3a721d63", source: "note", date: "2026-02-02" },
-  { title: "AIと一緒にHoI4 modを作るツールを作った話", url: "https://note.com/zyuuzika/n/ndf02c9aa20a9", source: "note", date: "2026-03-06" },
-  { title: "X・BlueskyユーザーをTCGカード化するブラウザゲームを作った", url: "https://note.com/zyuuzika/n/n51f8df4a6f93", source: "note", date: "2026-03-11" },
-  { title: "Yahooリアルタイム検索のAPIが本当に有能だからみんな使ったほうがいい話", url: "https://qiita.com/maebahesioru/items/4fc4e6baf5b96aa84061", source: "qiita", date: "2026-03-14" },
-  { title: "地雷チャンの個人情報とか", url: "https://beast-note.yajuvideo.st/text_contents/20f824d1-4edb-456e-bbe9-10a7eda85eb2", source: "beastnote", date: "2026-06-16" },
-  { title: "Yahooリアルタイム検索APIのdoc", url: "https://beast-note.yajuvideo.st/text_contents/7a846f69-349c-4008-b943-ec9d69d8a6aa", source: "beastnote", date: "2026-06-30" },
-  { title: "『ヒカマニクエスト』エンディング案・全24種", url: "https://beast-note.yajuvideo.st/text_contents/a3d652df-1638-44d2-950e-701fb930b9b1", source: "beastnote", date: "2026-07-22" },
-  { title: "ヒカマーズアルカイダは電気糞の夢を見るか？", url: "https://beast-note.yajuvideo.st/text_contents/8dd7cfa5-4234-4c13-af5d-5301cc1ac753", source: "beastnote", date: "2026-07-26" },
-  { title: "ヒカマーズ1984", url: "https://beast-note.yajuvideo.st/text_contents/d1cf0480-c95b-4ac1-a687-872c94b96a2b", source: "beastnote", date: "2026-07-26" },
-  { title: "Windows Updateが全更新0x80240034で失敗する時の復旧手順(FODOrOCPended地獄からの脱出)", url: "https://qiita.com/maebahesioru/items/ec4f1bc8eeaf42f7366c", source: "qiita", date: "2026-08-03" },
-  { title: "ヒカキンブンブンじゃんけん & Today's Hikakin's Point 完全解析マスターレポート", url: "https://beast-note.yajuvideo.st/text_contents/a52a1349-87c3-4049-bc02-2f8b13958ff6", source: "beastnote", date: "2026-08-07" },
-  { title: "マニアスプレッダーのサンサンサンデー2026について", url: "https://beast-note.yajuvideo.st/text_contents/5b534648-f096-4355-b539-92ada7856c9d", source: "beastnote", date: "2026-08-07" },
-  { title: "マニアスプレッダーのサンサンサンデー2026野獣の日SPの振り返り", url: "https://beast-note.yajuvideo.st/text_contents/f9b2909f-c773-4201-8046-cca74dc1a8c5", source: "beastnote", date: "2026-08-13" },
-  { title: "hikabooru 素材のソース一覧", url: "https://beast-note.yajuvideo.st/text_contents/4e339faa-dc53-4a34-9c6b-b216da6d1c9f", source: "beastnote", date: "2026-08-19" },
-  { title: "宏子老坂のヒカマー訴訟が絶対に無理な理由", url: "https://x.com/maebahesioru2/status/2093626388205195448", source: "x", date: "2026-08-29" },
 ];
 
 export type ContactLink = {

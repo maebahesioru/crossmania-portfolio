@@ -122,14 +122,6 @@ export default function HomelabPage() {
         </p>
         <p className="text-[13px] text-sub">
           ▼ 関連:{" "}
-          <a
-            href="https://tsuittara-yoron.hikamers.app"
-            className="underline underline-offset-2"
-            rel="noopener"
-          >
-            ツイッタラー世論調査
-          </a>
-          {" / "}
           <a href="/mirror" className="underline underline-offset-2">
             ミラーページ
           </a>

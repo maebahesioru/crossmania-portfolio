@@ -50,7 +50,7 @@ export async function GET() {
         {
           id: "blog",
           name: "記事一覧",
-          description: "note / Qiita / Zenn / 野獣ノート / X に書いた記事の一覧を返す。",
+          description: "このサイトに書いた技術記事の一覧を返す。",
           tags: ["blog", "articles", "posts"],
           examples: ["書いた記事を見せて", "ブログ一覧"],
         },

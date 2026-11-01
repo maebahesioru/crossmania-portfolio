@@ -5,12 +5,12 @@
  *    「OAuth で認証できる」等、存在しない機能を書くと、エージェント側から見て
  *    壊れたサイトになる(このサイトに認証は無く、公開APIは誰でも読める)。
  */
-import { BLOG, CONTACTS, DONATIONS, PROFILE, PROJECTS, SKILLS } from "./profile";
+import { CONTACTS, DONATIONS, PROFILE, PROJECTS, SKILLS } from "./profile";
+import { LOCAL_POSTS } from "./localPosts";
 import { SITE, SITE_URL } from "./site";
 
 /** 公開している読み取りAPI。OpenAPI とカタログの両方がこれを参照する */
 export const PUBLIC_API: { path: string; summary: string; params?: string }[] = [
-  { path: "/api/blog", summary: "note / Qiita / Zenn / 野獣ノート / X の記事一覧(自動収集・30分キャッシュ)" },
   { path: "/api/bbs", summary: "BBSの投稿一覧。POST は HIKAPTCHA(ロボット確認)が必須", params: "id, key (DELETE)" },
   { path: "/api/visits", summary: "訪問者カウンター(のべ・ユニーク)" },
   { path: "/api/weather", summary: "北海道千歳の今日・明日の天気(Open-Meteo)" },
@@ -65,7 +65,7 @@ export function llmsTxt(): string {
   lines.push("");
   lines.push("## Notes");
   lines.push("- 公開APIは認証不要・読み取り自由。レート制限は緩いが常識的な範囲で。");
-  lines.push("- 記事一覧は30分キャッシュ。出典は各プラットフォーム(note / Qiita / Zenn / 野獣ノート / X)。");
+  lines.push("- 記事一覧はサイト内の記事のみ。外部サービスは含まない。");
   lines.push("- コードは WTFPL v2。文章・イラストは © 十字架_mania。");
   lines.push("");
   return lines.join("\n");
@@ -101,7 +101,7 @@ export function authMd(): string {
 
 利用開始の手順:
 
-1. 何もせず \`GET https://hikamers.app/api/blog\` などを呼ぶ(認証ヘッダは不要)
+1. 何もせず \`GET https://hikamers.app/api/bbs\` などを呼ぶ(認証ヘッダは不要)
 2. 書き込みたい場合のみ、投稿ごとに HIKAPTCHA を解く(下記)
 
 ## Write access (BBS のみ)
@@ -171,7 +171,7 @@ description: 十字架_mania のポートフォリオ(hikamers.app)から、プ�
 ## いつ使うか
 
 - この人物のプロフィール・作品・連絡先を知りたいとき
-- note / Qiita / Zenn / 野獣ノート / X に書いた記事の一覧が欲しいとき
+- サイト内の技術記事の一覧が欲しいとき
 - サイトの公開APIからデータを取りたいとき
 
 ## ページを Markdown で取る
@@ -188,7 +188,6 @@ curl -H 'Accept: text/markdown' ${SITE_URL}/blog
 ## 公開API(認証不要)
 
 \`\`\`bash
-curl ${SITE_URL}/api/blog      # 記事一覧(自動収集・30分キャッシュ)
 curl ${SITE_URL}/api/visits    # 訪問者カウンター
 curl ${SITE_URL}/api/weather   # 北海道千歳の天気
 curl ${SITE_URL}/api/github    # GitHub アクティビティ
@@ -200,7 +199,7 @@ curl ${SITE_URL}/api/github    # GitHub アクティビティ
 
 ## 注意
 
-- 記事の本文は各プラットフォーム(note / Qiita / Zenn / 野獣ノート / X)側にある。ここは一覧とリンクのみ。
+- 記事一覧に外部サービスの記事は含まない(サイト内で書いたものだけ)。
 - BBS への書き込みは HIKAPTCHA(画像認証)が必要。自動投稿は想定していない。
 - 引用するときは出典として ${SITE_URL} を添えること。
 `;
@@ -246,17 +245,16 @@ export function profileMarkdown(): string {
   return out.join("\n");
 }
 
-/** BLOG の静的リスト(Markdown 用。ライブ収集は /api/blog 側) */
+/** サイト内記事の静的リスト(Markdown 用) */
 export function blogMarkdown(): string {
   const out: string[] = [];
   out.push("# Blog");
   out.push("");
-  out.push("note / Qiita / Zenn / 野獣ノート / X に書いた記事の一覧。");
-  out.push("最新の一覧(自動収集)は [/api/blog](" + SITE_URL + "/api/blog) で取れる。");
+  out.push("自宅サーバー・Linux・デバッグまわりで実際に踏んだことを書いた記事の一覧。");
   out.push("");
-  const sorted = [...BLOG].sort((a, b) => (b.date ?? "").localeCompare(a.date ?? ""));
+  const sorted = [...LOCAL_POSTS].sort((a, b) => b.date.localeCompare(a.date));
   for (const p of sorted) {
-    out.push(`- ${p.date ? `${p.date} ` : ""}[${p.title}](${p.url}) — ${p.source}`);
+    out.push(`- ${p.date} [${p.title}](${SITE_URL}${p.href}) — ${p.tag}`);
   }
   out.push("");
   return out.join("\n");

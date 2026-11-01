@@ -1,4 +1,5 @@
-import { BLOG, CONTACTS, DONATIONS, PROFILE, PROJECTS, SKILLS, SOURCES } from "@/lib/profile";
+import { CONTACTS, DONATIONS, PROFILE, PROJECTS, SKILLS } from "@/lib/profile";
+import { LOCAL_POSTS } from "@/lib/localPosts";
 import { readJson } from "@/lib/store";
 import { SITE } from "@/lib/site";
 
@@ -42,8 +43,8 @@ export function projectsText(): string {
 }
 
 export function blogText(limit = 50): string {
-  return BLOG.slice(0, limit)
-    .map((b) => `- [${SOURCES[b.source].label}] ${b.title}${b.date ? ` (${b.date})` : ""}\n  ${b.url}`)
+  return LOCAL_POSTS.slice(0, limit)
+    .map((p) => `- [${p.tag}] ${p.title} (${p.date})\n  ${SITE.url}${p.href}`)
     .join("\n");
 }
 
@@ -113,7 +114,7 @@ export function mcpServerCard() {
 export const MCP_TOOLS = [
   { name: "get_profile", description: "十字架_mania のプロフィール(自己紹介・スキル・肩書き)を返す", keys: ["profile"] },
   { name: "list_projects", description: "公開しているプロジェクトの一覧を返す", keys: ["projects"] },
-  { name: "list_blog_posts", description: "書いた記事(note / Qiita / Zenn / 野獣ノート / X)の一覧を返す", keys: ["blog"] },
+  { name: "list_blog_posts", description: "このサイトに書いた技術記事の一覧を返す", keys: ["blog"] },
   { name: "list_bbs_posts", description: "BBS の最近の投稿を返す", keys: ["bbs"] },
   { name: "get_donate_info", description: "寄付・支援の方法(暗号通貨アドレス等)を返す", keys: ["donate"] },
   { name: "get_contacts", description: "連絡先・SNS アカウントの一覧を返す", keys: ["contacts"] },
